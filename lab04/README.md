@@ -1,8 +1,8 @@
 #  Lab 04 - C++ Templates and Dimension Independence (step-4)
-## Numerical Solution of PDEs Using the Finite Element Method 
+## Numerical Solution of PDEs Using the Finite Element Method
 ### MHPC P2.13_seed
 
-**Martin Kronbichler** <kronbichler@lnm.mw.tum.de> 
+**Martin Kronbichler** <kronbichler@lnm.mw.tum.de>
 and
 **Luca Heltai** <luca.heltai@sissa.it>
 
@@ -27,9 +27,8 @@ and
     mesh by 45 degrees (only in 2d!). Note that the function doesn't exist in
     3d (hint: function specialization).
 
-6.  Change the mesh to an L-shape, only apply boundary values to the
-    faces adjacent to the center (see `set_boundary_indicator()` in the
-    step-3 description), change the boundary values to be $1+\|x\|_2$
-    and the right-hand side to be 1. Finally, visualize your solutions
-    in ParaView in 2d and 3d.
-
+6.  Change the mesh to an L-shape, only apply boundary values to the faces
+    adjacent to the re-entrant corner (see `set_boundary_indicator()` in the
+    step-3 description), change the boundary values to be $1+\|x\|_2$ and the
+    right-hand side to be 1. Finally, visualize your solutions in ParaView in
+    2d and 3d.
