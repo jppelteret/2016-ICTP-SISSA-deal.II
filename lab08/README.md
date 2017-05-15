@@ -10,7 +10,7 @@ and
 
  1. The topic of this lab session is a modified version of step-4 made
     available for you and the goal is to implement adaptive refinement based on
-    step-6, see <https://www.dealii.org/8.4.0/doxygen/deal.II/step_6.html>
+    step-6, see <https://www.dealii.org/8.5.0/doxygen/deal.II/step_6.html>
 
  2. Modify the included program to support adaptive refinement by adding a
     ConstraintMatrix and the necessary function calls in ``setup`` (to create

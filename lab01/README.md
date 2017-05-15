@@ -47,7 +47,7 @@ and
 2.  Tasks for tutorial step-1:
 
     1.  See documentation at\
-        <https://www.dealii.org/8.4.0/doxygen/deal.II/step_1.html>
+        <https://www.dealii.org/8.5.0/doxygen/deal.II/step_1.html>
 
     2.  Compile and run inside qtcreator and look at the output.
 

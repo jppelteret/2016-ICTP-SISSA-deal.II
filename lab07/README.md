@@ -11,7 +11,7 @@ and
 
 1.  The topic of this lab session is a modified version of step-38 made
     available for you as **lab-7**\
-    <https://www.dealii.org/8.4.0/doxygen/deal.II/step_38.html>
+    <https://www.dealii.org/8.5.0/doxygen/deal.II/step_38.html>
 
 2.  Run the program and check the graphical and text output.
 

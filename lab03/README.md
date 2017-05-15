@@ -9,7 +9,7 @@ and
 * * * * *
 
 1.  See documentation of step-3 at
-    <https://www.dealii.org/8.4.0/doxygen/deal.II/step_3.html>
+    <https://www.dealii.org/8.5.0/doxygen/deal.II/step_3.html>
 
 2.  Copy and run step-3.
 
