@@ -1,6 +1,6 @@
 /* ---------------------------------------------------------------------
  *
- * Copyright (C) 1999 - 2015 by the deal.II authors
+ * Copyright (C) 1999 - 2017 by the deal.II authors
  *
  * This file is part of the deal.II library.
  *
@@ -14,7 +14,7 @@
  * ---------------------------------------------------------------------
 
  *
- * Author: Timo Heister, based on step-4
+ * Author: Martin Kronbicher and Timo Heister, based on step-4
  */
 
 
@@ -25,10 +25,12 @@
 #include <deal.II/grid/tria_accessor.h>
 #include <deal.II/grid/tria_iterator.h>
 #include <deal.II/grid/grid_out.h>
+#include <deal.II/base/convergence_table.h>
 #include <deal.II/dofs/dof_accessor.h>
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/fe/fe_values.h>
+#include <deal.II/fe/mapping_q.h>
 #include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/numerics/vector_tools.h>
@@ -75,6 +77,8 @@ private:
 
   Vector<double>       solution;
   Vector<double>       system_rhs;
+
+  mutable ConvergenceTable  convergence_table;
 };
 
 
@@ -97,7 +101,9 @@ double RightHandSide<dim>::value (const Point<dim> &p,
   double y = p(1);
   double r = sqrt(x*x+y*y);
   double theta = atan2(y,x);
-  return 1.0;
+  return 0;
+  // function from lab05
+  //return 2*numbers::PI*numbers::PI*sin(1*numbers::PI*x)*cos(1*numbers::PI*y);
 }
 
 
@@ -125,6 +131,8 @@ double SolutionValues<dim>::value (const Point<dim> &p,
   double theta = atan2(y,x);
   if (dim==2)
     return r*r*sin(3.0*theta);
+    // function from lab05
+    //return sin(numbers::PI*x)*cos(numbers::PI*y);
   else
     return 0.0; // TODO
 }
@@ -140,6 +148,7 @@ Tensor<1,dim> SolutionValues<dim>::gradient (const Point<dim> &p,
   double theta = atan2(x,y);
   if (dim==2)
     {
+      // TODO
       return_value[0] = 0;
       return_value[1] = 0;
     }
@@ -158,8 +167,8 @@ Tensor<1,dim> SolutionValues<dim>::gradient (const Point<dim> &p,
 template <int dim>
 Step4<dim>::Step4 ()
   :
-  fe (2),
-  mapping (1),
+  fe (1),
+  mapping (fe.degree, true),
   quad_degree(2*fe.degree+2),
   dof_handler (triangulation)
 {}
@@ -171,19 +180,9 @@ void Step4<dim>::make_grid ()
 {
   Point<dim> center;
   GridGenerator::hyper_ball (triangulation, center);
-  //triangulation.set_all_manifold_ids(0);
   triangulation.set_all_manifold_ids_on_boundary(0);
 
-  if (0)
-    {
-      typename Triangulation<dim>::active_cell_iterator cell =
-          triangulation.begin_active();
-      for (;cell!=triangulation.end();++cell)
-        if (cell->center().square()<1e-3)
-          cell->set_all_manifold_ids(1);
-    }
-
-  static SphericalManifold<dim> manifold_description(center);
+  static PolarManifold<dim> manifold_description(center);
   triangulation.set_manifold(0, manifold_description);
   triangulation.refine_global (1);
 }
@@ -282,7 +281,7 @@ void Step4<dim>::assemble_system ()
 template <int dim>
 void Step4<dim>::solve ()
 {
-  SolverControl           solver_control (2000, 1e-12);
+  SolverControl           solver_control (system_matrix.n(), 1e-12);
   SolverCG<>              solver (solver_control);
   PreconditionSSOR<SparseMatrix<double> > prec;
   prec.initialize(system_matrix);
@@ -299,19 +298,33 @@ void Step4<dim>::solve ()
 template <int dim>
 void Step4<dim>::output_results (unsigned int cycle) const
 {
-  DataOut<dim> data_out;
+  {
+    DataOut<dim> data_out;
 
-  data_out.attach_dof_handler (dof_handler);
-  data_out.add_data_vector (solution, "solution");
+    data_out.attach_dof_handler (dof_handler);
 
-  data_out.build_patches ();
+    // interpolate analytical solution to a second vector and compute an error
+    // field for output as the difference between the numerical solution and the
+    // analytical one
+    Vector<double> analytical(dof_handler.n_dofs());
+    VectorTools::interpolate(mapping, dof_handler, SolutionValues<dim>(),
+                             analytical);
+    Vector<double> error = analytical;
+    error -= solution;
 
-  std::string filename = dim == 2 ?
-        "solution-2d-" :
-        "solution-3d-";
-  filename += Utilities::int_to_string(cycle,2) + ".vtk";
-  std::ofstream output (filename.c_str());
-  data_out.write_vtk (output);
+    data_out.add_data_vector (solution, "solution");
+    data_out.add_data_vector (analytical, "analytical_solution");
+    data_out.add_data_vector (error, "error");
+
+    data_out.build_patches ();
+
+    std::string filename = dim == 2 ?
+      "solution-2d-" :
+      "solution-3d-";
+    filename += Utilities::int_to_string(cycle,2) + ".vtk";
+    std::ofstream output (filename.c_str());
+    data_out.write_vtk (output);
+  }
 
   Vector<float> difference_per_cell (triangulation.n_active_cells());
   VectorTools::integrate_difference (mapping,
@@ -331,6 +344,12 @@ void Step4<dim>::output_results (unsigned int cycle) const
                                      QGauss<dim>(quad_degree+1),
                                      VectorTools::H1_norm);
   const double H1_error = difference_per_cell.l2_norm();
+
+  // add data to convergence table
+  convergence_table.add_value("cells", triangulation.n_active_cells());
+  convergence_table.add_value("dofs", dof_handler.n_dofs());
+  convergence_table.add_value("L2", L2_error);
+  convergence_table.add_value("H1", H1_error);
 
   std::cout << "  h= " << triangulation.begin_active()->diameter()
                << "  L2= " << L2_error
@@ -358,6 +377,14 @@ void Step4<dim>::run ()
       solve ();
       output_results (cycle);
     }
+
+  convergence_table.set_scientific("L2", true);
+  convergence_table.set_scientific("H1", true);
+  convergence_table
+    .evaluate_convergence_rates("L2", ConvergenceTable::reduction_rate_log2);
+  convergence_table
+    .evaluate_convergence_rates("H1", ConvergenceTable::reduction_rate_log2);
+  convergence_table.write_text(std::cout);
 }
 
 
