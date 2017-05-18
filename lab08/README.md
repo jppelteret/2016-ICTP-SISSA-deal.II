@@ -1,4 +1,4 @@
-#  Lab 08 - Adaptive Refinement
+#  Lab 07 - Adaptive Refinement
 ## Numerical Solution of PDEs Using the Finite Element Method 
 ### MHPC P2.13_seed
 

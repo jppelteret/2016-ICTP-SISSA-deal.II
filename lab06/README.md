@@ -34,10 +34,11 @@ and
 
 7.  Try getting H1 convergence to work correctly too.
 
-8.  Change the right hand side and the solution to $$u(x) = \sin(\pi x
-    )\cdot\cos(\pi y)$$ from lab05, but now solved on the circle. Record the
-    convergence rates as you increase the polynomial degree. Look at the error
-    field in the ParaView output. Where is the error largest?
+8.  Change the right hand side and the class `SolutionValues` according to the
+    analytic solution $$u(x) = \sin(\pi x )\cdot\cos(\pi y)$$ from lab05, but
+    now solved on the circle. Record the convergence rates as you increase the
+    polynomial degree. Look at the error field in the ParaView output. Where
+    is the error largest?
 
 9.  In the asymptotic regime, the highest possible convergence rate on the
     cirlce appears to be 3.5 irrespective of the degree of the
