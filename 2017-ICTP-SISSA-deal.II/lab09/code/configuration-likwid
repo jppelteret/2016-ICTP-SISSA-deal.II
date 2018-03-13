@@ -1,0 +1,3 @@
+# adapt the path the likwid and the deal.II installation
+rm -rf CMakeFiles CMakeCache.txt
+cmake -D DEAL_II_DIR=~/deal/o3_build -D CMAKE_CXX_FLAGS="-fopenmp -DLIKWID_PERFMON -I/opt/likwid/include" -D CMAKE_EXE_LINKER_FLAGS="-fopenmp -L/opt/likwid/lib -llikwid" -DCMAKE_BUILD_TYPE="Release" .
