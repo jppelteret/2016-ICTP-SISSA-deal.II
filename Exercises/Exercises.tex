@@ -1,0 +1,598 @@
+%\documentclass[11pt,addpoints]{exam}
+\documentclass[11pt,answers]{exam}
+
+\usepackage[a4paper,margin=2cm]{geometry}
+\parskip   2ex
+\parsep    2ex
+\itemsep   2ex
+\parindent 0mm
+
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[tbtags]{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{latexsym}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\usepackage{listings}
+% https://tex.stackexchange.com/a/17268
+\lstset{
+  literate={~} {$\sim$}{1},
+  basicstyle=\ttfamily,
+}
+
+\pagestyle{empty}
+
+\newcommand{\FINISHME}[1]{\textcolor{red}{#1}}
+
+\newcommand{\makeheader}[3]{%
+\setcounter{question}{0}
+\begin{center}
+{\sc Numerical Solution of PDEs Using the Finite Element Method}\vspace{2ex}\\
+{\sc Exercise #1:\ \ \ #2}\vspace{2ex}\\
+\begin{tabular*}{\textwidth}{ll @{\extracolsep{\fill}}r}
+Jean-Paul Pelteret & (\url{jean-paul.pelteret@fau.de}) & \multirow{2}{*}{#3} \\
+Luca Heltai & (\url{luca.heltai@sissa.it}) & \\
+\end{tabular*}
+\end{center}
+}
+\newcommand{\makeprojectheader}[2]{%
+\begin{center}
+{\sc Numerical Solution of PDEs Using the Finite Element Method}\vspace{2ex}\\
+{\sc Project:\ \ \ #1}\vspace{2ex}\\
+\begin{tabular*}{\textwidth}{ll @{\extracolsep{\fill}}r}
+Jean-Paul Pelteret & (\url{jean-paul.pelteret@fau.de}) & \multirow{2}{*}{#2} \\
+Luca Heltai & (\url{luca.heltai@sissa.it}) & \\
+\end{tabular*}
+\end{center}
+}
+\newcommand{\makeresources}[1]{%
+\rule{\textwidth}{0.6mm}
+\textbf{Some useful resources}\\[1.5ex]
+#1 \\
+\rule{\textwidth}{0.6mm}
+}
+
+
+\begin{document}
+
+% ===== EXERCISE 0: Setup ====
+
+\clearpage
+\makeheader{0}{Setting up the IDE}{19 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_1.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_49.html}
+}
+
+\begin{itemize}
+\item Edit the file \verb|~/.bashrc| to contain the line source \verb|/scratch/smr2909/enable.sh|. 
+You can use gedit \verb|~/.bashrc| to open an editor. 
+\item Close and re-open your terminal to activate the changes.
+\item Check that this worked by typing \verb|echo $DEAL_II_DIR|. 
+ You should see\\\verb|/scratch/smr2909/deal.II/install| printed to the screen.
+\item Please note that inside \verb|/scratch/smr2909/| there are the following folders:
+\begin{itemize}
+\item \verb|labs/| -- a folder with exercise sheets and example programs
+\item \verb|bin/| and \verb|apps/| -- several programs (you shouldn't need to access them directly, because they will be imported into your \verb|PATH| automatically)
+\item \verb|libs/|, \verb|candi/|, \verb|candi-build| -- libraries deal.II depends on.
+\item \verb|deal.II| -- source, build, and installation of deal.II.
+\item \verb|deal.II/dealii/examples/| -- all tutorial programs.
+\end{itemize}
+\item To make a copy of \verb|step-1|, configure, compile, and run it:
+\begin{lstlisting}[language=bash]
+$ cp -r /scratch/smr2909/labs/lab01/step-1 ~/
+$ cd ~/step-1
+$ cmake .
+$ make
+$ ./step-1
+\end{lstlisting}
+\item  IDE: open \verb|Qt Creator|.
+\end{itemize}
+
+
+% ===== EXERCISE 1: Triangulation ====
+
+
+\clearpage
+\makeheader{1}{Creating and manipulating \texttt{Triangulation}s}{19 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_1.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_49.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-1| as a base:
+
+\begin{parts}
+\part Compile and run this tutorial inside \verb|Qt Creator| and inspect at the output.
+\part Create a helper function that takes a reference to a Triangulation and prints the following information: 
+\begin{itemize}
+\item number of levels
+\item number of cells
+\item number of active cells
+\end{itemize}
+Test this with all of your meshes.
+\end{parts}
+
+\question Modifying an existing meshing function
+\begin{parts}
+\part Comment out the \verb|.set_manifold(0, ...)| line in \verb|second_grid()|. What happens now?
+\part Output mesh two as an svg file instead of eps. 
+ Open it in a browser to display it (firefox for example).
+\part Go into \verb|second_grid()| and remove the last line (\verb|.set_manifold(0);|). The program will crash when you run it. 
+Try to find out what is going on by debugging the program \hbox{(``Debug'' $\rightarrow$ ``Start debugging'' in \verb|Qt Creator|)} and stepping through the function \linebreak\hbox{\verb|second_grid()|}. 
+You can fix this problem in a more elegant way than putting the line you removed back in. 
+How? See the tutorial description for more info.
+\end{parts}
+
+\question Creating a mesh from scratch
+\begin{parts}
+\part Generate a circle using \verb|GridGenerator::hyper_ball()| in 2d  (add a function \verb|third_grid()| to \verb|step-1|).
+\begin{subparts}
+\subpart Use a \verb|SphericalManifold| everywhere, only on the boundary, or on all cells except the center cell and refine the mesh globally twice.
+\subpart  Set the output format of the previous example to \verb|vtk| and inspect the mesh in \verb|Paraview|.
+\end{subparts}
+\part Create an image of an L-shape domain with one global refinement.
+\begin{subparts}
+\subpart Inspect the mesh in \verb|Paraview|.
+\subpart Refine the L-shaped mesh adaptively around the re-entrant corner several times but with a twist: refine all cells with the distance between the center of the cell and re-entrant corner is smaller than $\frac{1}{3}$.
+\end{subparts}
+\end{parts}
+
+\question Reading in a mesh
+\begin{parts}
+\part Take a look at \verb|step-49| and read the included \verb|.msh| file in your modified \verb|step-1| program.
+\part Add two levels of refinement to the cells at the boundary of the cut-outs.
+\end{parts}
+
+\question Additional tasks
+\begin{parts}
+\bonuspart Create a mesh that represents the surface of a torus and refine it 2 times globally. Output to \verb|vtk| format and check the output. Note that your \verb|Triangulation| needs to be of type \verb|Triangulation<2,3>| (not explicitly discussed in this course).
+\end{parts}
+
+%\begin{solution}
+%Meh
+%\end{solution}
+
+\end{questions}
+
+
+% ===== EXERCISE 2: DoFHandler, DoFRenumbering, sparsity patterns ====
+
+
+\clearpage
+\makeheader{2}{Creating a \texttt{DoFHandler} and visualising sparsity patterns}{19 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_2.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceDoFRenumbering.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-2| as a base:
+\begin{parts}
+\part Compile and run this tutorial inside \verb|Qt Creator| and inspect at the output.
+\part Look at the generated sparsity patterns in firefox.
+\end{parts}
+
+\question Investigate:
+\begin{parts}
+\part How does the pattern change if you increase the polynomial degree from 1 to 2 or to 3?
+\part \label{Ex 2: Refined unit square} How does the pattern change if you use a globally refined (say 3 times) unit square?
+\part Are these patterns symmetric? Why/why not?
+\part How many entries per row in the sparsity pattern do you expect for a \verb|Q1| element (assuming four cells are around each vertex)? 
+\begin{subparts}
+\subpart Check that this is true for the mesh in (\ref{Ex 2: Refined unit square}) (look for \verb|row_length(i)| and output them for each row). 
+\subpart Can you construct a 2d mesh (without hanging nodes) that has a row with more entries?
+\end{subparts}
+\part How many entries per row in the sparsity pattern are there for \verb|Q2| and \verb|Q3| elements, again assuming four cells around each vertex?
+\part Print all entries for row 42 for the original renumbered sparsity pattern.
+\part Renumber the DoFs using the \verb|boost::king_ordering| algorithm. What does the sparsity pattern look like now?
+\end{parts}
+
+\question Additional tasks
+\begin{parts}
+\bonuspart Compute and output statistics like the number of unknowns, bandwidth of the sparsity pattern, average number of entries per row, and fill ratio.
+\bonuspart Investigate the other appropriate DoF renumbering schemes. Which one produces the most banded structure?
+\bonuspart Repeat the above for increasing refinement levels. Which is the most efficient scheme (lets say, in terms of bandwidth reduction versus computational time expended)?  You can get an estimate of the time for this operation like this:
+\begin{lstlisting}[language=bash]
+$ time ./step-2
+\end{lstlisting}
+\bonuspart What happens if you change the mesh from 2d to 3d?
+\bonuspart Investigate the sparsity patterns generated for other types of \verb|FiniteElement|s.
+\end{parts}
+
+\end{questions}
+
+
+% ===== EXERCISE 3: Poisson problem ====
+
+
+\clearpage
+\makeheader{3}{Solving the Poisson problem}{19 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_3.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_4.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-3| as a base:
+\begin{parts}
+\part Compile and run this tutorial inside \verb|Qt Creator| and inspect at the output.
+\part Modify the code so that the problem is dimension-independent.
+\part Switch to \verb|vtk| output and visualize in \verb|Paraview|. Figure out how to warp the solution by the solution variable.
+\part Add a zero Neumann boundary condition to one edge of the domain.
+\begin{subparts}
+\subpart Assign this Neumann boundary the indicator 1.
+\subpart Tip: Look at the instructions in ``Modify the type of boundary condition'' in the ``Possibilities for extensions'' section of the tutorial.
+\end{subparts}
+\part Add a non-zero Dirichlet boundary condition to one edge of the domain.
+\begin{subparts}
+\subpart Set the value to $-0.5$ for the boundary with \hbox{indicator 1}.
+\subpart Tip: Look at the instructions in ``A slight variation of the last point'' in the ``Possibilities for extensions'' section of the tutorial.
+\subpart Change the setup to have $f = 0$. Compare this result to that where $f$ is non-zero.
+\end{subparts}
+\part Switch to an L-shaped domain and experiment with a combination of Dirichlet and Neumann boundary conditions. By experimentation, identify the faces adjacent to the re-entrant corner and apply Dirichlet conditions only there.
+\end{parts}
+
+%1. See documentation of step-4 at https://www.dealii.org/8.5.0/doxygen/deal.II/step_4.html
+%2. Write a member function void mesh_info() that prints the following information about the triangula- tion to the screen: 1) number of active cells, 2) number of active/used vertices, lines, quads, hexs (only if appropriate for the dimension!).
+%3. Use VectorTools::compute_mean_value (see step-3) and verify the convergence order of the mean in 2d and 3d.
+%4. Gobacktostep-1andvisualizethesurfaceoftheTorusbycreatingaTriangulation<2,3>(2=dimension of the cells, 3=dimension of the space) using GridGenerator::torus if you haven’t done so.
+%5. Try to use the function GridTools::rotate in make_grid() to rotate the mesh by 45 degrees (only in 2d!). Note that the function doesn’t exist in 3d (hint: function specialization).
+%6. Change the mesh to an L-shape, only apply boundary values to the faces adjacent to the re-entrant corner (see set_boundary_indicator() in the step-3 description), change the boundary values to be 1 + ∥x∥2 and the right-hand side to be 1. Finally, visualize your solutions in ParaView in 2d and 3d.
+
+\question Additional tasks
+\begin{parts}
+\bonuspart Do ``Convergence of the mean''. Can you see the order $h^{2}$? 
+\bonuspart Increase the polynomial order (you need to increase all orders of the quadratures in the program!) and check the convergence of the mean now.
+\end{parts}
+
+\end{questions}
+
+
+% ===== EXERCISE 4: Local refinement, hanging nodes and the ConstraintMatrix ====
+
+
+\clearpage
+\makeheader{4}{Local refinement, hanging nodes and the \texttt{ConstraintMatrix}}{20 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-x| as a base:
+\begin{parts}
+\part x
+\end{parts}
+
+\question Additional tasks
+\begin{parts}
+\bonuspart x
+\end{parts}
+
+\end{questions}
+
+
+% ===== EXERCISE 5: Local (adaptive) refinement and computing errors ====
+
+
+\clearpage
+\makeheader{5}{Local (adaptive) refinement and computing errors}{20 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-x| as a base:
+\begin{parts}
+\part x
+\end{parts}
+
+% Lab 5
+%1. The topic of this lab session is a modified version of step-4 made available for you https://www.dealii. org/8.5.0/doxygen/deal.II/step_4.html
+%2. For more information about computing errors see step-7 (it is a bit more complicated though) https: //www.dealii.org/8.5.0/doxygen/deal.II/step_7.html
+%3. Run the program and check the graphical and text output.
+%4. Where is the right-hand side defined and where do the boundary conditions come from?
+%5. Fix the right-hand side and boundary conditions to get the manufactured solution
+%u(x) = \sin(\pi x) · \cos(\pi y)
+%and make sure the L2 errors are converging.
+%6. Increase the polynomial degree of the finite element space and check the convergence of the L2 error.
+%7. Implement the computation of the H1 error. For this you need to compute the gradient of the manufactured solution and implement it (see commented out code for a start).
+%8. Implement a suitable 3d manufactured solution and test the convergence.
+
+% Lab 7
+%1. The topic of this lab session is a modified version of step-4 made available for you and the goal is to implement adaptive refinement based on step-6, see https://www.dealii.org/8.5.0/doxygen/deal.II/ step_6.html
+%2. Modify the included program to support adaptive refinement by adding a ConstraintMatrix and the necessary function calls in setup (to create the constraints), assembly (distribute_local_to_global and no apply_boundary_values), solve (distribute), and replace the logic in refine_mesh.
+%3. What happens if you “forget” the call constraints.distribute(solution) after solving the linear system?
+%4. Use constraints.print (std::cout); to show the constraints if you have the following mesh in 2d:
+%     GridGenerator::hyper_cube(triangulation);
+%     triangulation.refine_global (1);
+%     triangulation.begin_active()->set_refine_flag ();
+%     triangulation.execute_coarsening_and_refinement ();
+%and also look at this mesh (for example in paraview). Does the result make sense to you? Also compare with/without adding boundary conditions!
+% 5. Change the problem to be an L-shape in 3d (start with 2 global refinements) and manufactured solution u(x, y, z) = 1 .
+% r2 + 0.001
+%Make sure you apply the correct right-hand side and boundary conditions.
+%6. Compute the L2 error with respect to the number of DoFs with a) global refinement and b) adaptive refinement using a KellyEstimator like in step-6.
+%7. Plot the two graphs in 4) in a log-log plot and include the line for a quadratic rate. Note that h2 =N−2/3.
+
+\question Additional tasks
+\begin{parts}
+\bonuspart x
+\end{parts}
+
+\end{questions}
+
+
+% ===== EXERCISE 6: Shared memory parallelisation ====
+
+
+\clearpage
+\makeheader{6}{Shared memory parallelisation}{20 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-x| as a base:
+\begin{parts}
+\part x
+\end{parts}
+
+%- Assembly
+%- Vector norm (chunks of a vector at a time)
+%- Post-processing
+
+\question Additional tasks
+\begin{parts}
+\bonuspart x
+\end{parts}
+
+\end{questions}
+
+
+% ===== EXERCISE 7: MPI parallelisation: Shared Triangulation ====
+
+
+\clearpage
+\makeheader{7}{MPI parallelisation: \\\texttt{parallel::shared::Triangulation} and \texttt{parallel::distributed::Triangulation}}{21 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_17.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_18.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_40.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__distributed.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__TrilinosWrappers.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__PETScWrappers.html}
+}
+
+% MpiInitFinalize
+% pcout
+% computing_timer
+% Trilinos
+% p::s::Tria
+% IndexSet - locally owned, locally relevant
+% Assembly; FilteredIterator
+% Data output
+
+% When do I need local data, i.e. KellyErrorEstimator
+
+% RHS function: Rotated ellipse?
+% Check the difference in performance between direct vs CG+AMG solver
+
+% Additional question
+% Would you need to add additional parallelisation (i.e. tbb) to the assembly loop. Why / why not? Under what conditions would this be beneficial?
+
+% Lab 8
+%1. Repeat the basic MPI commands from the file mpihello/main.cc
+%2. Run the included step-40 using mpirun -n 4 ./step-40 and look at the graphical output.
+%3. Similar to shown in lecture, visualize the view of the mesh from each individual processor using GridOut::write_svg and the “global” mesh. Use 3 MPI tasks for this.
+%4. Now create a simple mesh (hyper_cube refined twice globally), run with two MPI tasks and print locally owned, locally active, and locally relevant IndexSet for each task.
+%5. Switch to release mode (make release), decide on a global refinement level that takes in the order of 30-60 seconds to solve, and study assembly and solve time with 1,2,4,8,12,16 MPI tasks. Which is the fastest, do the timings make sense based on how many cores your machine has?
+%6. Play with the test problem by switching to 3d and changing the geometry to something interesting. Your choice!
+
+\begin{questions}
+
+\question Using the supplied modified version of \verb|step-6| as a base:
+\begin{parts}
+\part For the first version of this code, use \verb|parallel::shared::Triangulation| and solve the 2d homogeneous Poisson equation 
+\begin{align*}
+-\Delta u(x,y) &= f(x,y) \quad \textnormal{on} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
+u(x,y) &= 0  \quad \textnormal{on} \quad \partial\Omega, \quad \textnormal{and} \\
+f(x,y) &= \begin{cases}
+1 &\quad \textnormal{if} \quad \vert xy \vert > 0.05 \\
+-1 &\quad \textnormal{otherwise}.
+\end{cases}
+\end{align*}
+These are the rough steps that you'll need to take to achieve this:
+\begin{subparts}
+\subpart Initialise the MPI environment correctly in the \verb|main| function
+\subpart \FINISHME{FINISH ME}
+\subpart Trilinos
+\subpart Direct solver
+\end{subparts}
+\part Repeat the above using a \verb|parallel::distributed::Triangulation|, while considering the following:
+\begin{subparts}
+\subpart PETSc
+\subpart Iterative solver: CG + AMG
+\end{subparts}
+\end{parts}
+
+
+\question Additional tasks
+\begin{parts}
+\bonuspart Compare the distribution of cells across the processes for the two implementation. Is there a difference and, if so, why?
+\bonuspart For this problem, measure the performance difference between the two implementations. What, do you think, are the primary factors affecting any differences you notice?
+\bonuspart \FINISHME{Non-homogeneous Poisson equation?}
+\end{parts}
+
+\end{questions}
+
+
+%% ===== EXERCISE 8: MPI parallelisation: Distributed Triangulation ====
+%
+%
+%\clearpage
+%\makeheader{8}{MPI parallelisation: \texttt{parallel::distributed::Triangulation}}{21 March 2018}
+%\makeresources{%
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+%}
+%
+%\begin{questions}
+%
+%\question Using \verb|step-x| as a base:
+%\begin{parts}
+%\part x
+%\end{parts}
+%
+%\question Additional tasks
+%\begin{parts}
+%\bonuspart x
+%\end{parts}
+%
+%\end{questions}
+
+
+% ===== EXERCISE 9: ????? ====
+
+
+\clearpage
+\makeheader{9}{?????}{22 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-x| as a base:
+\begin{parts}
+\part x
+\end{parts}
+
+\question Additional tasks
+\begin{parts}
+\bonuspart x
+\end{parts}
+
+\end{questions}
+
+
+% ===== EXERCISE 10: Time dependent problems and SolutionTransfer ====
+
+
+\clearpage
+\makeheader{10}{Time dependent problems and \texttt{SolutionTransfer}}{22 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html} \\
+\url{https://en.wikipedia.org/wiki/Potential_flow\#Sound_waves}
+}
+
+\begin{questions}
+
+\question Using \verb|step-x| as a base:
+\begin{parts}
+\part x
+\end{parts}
+
+\question Additional tasks
+\begin{parts}
+\bonuspart x
+\end{parts}
+
+\end{questions}
+
+
+% ===== EXERCISE 11: Automatic differentiation using Sacado ====
+
+
+\clearpage
+\makeheader{11}{Automatic differentiation using Sacado}{22 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+Test-suite
+}
+
+\begin{questions}
+
+\question \label{Ex 11: AD scalar functions} Compute the stipulated derivatives of the following functions using the \verb|Sacado::Fad::DFad| auto-differentiable number type. Verify your results.
+\begin{parts}
+\part \FINISHME{First derivatives only}
+\begin{subparts}
+\subpart $f(x) = \exp(2x)\ln(-2x)$ evaluated at $x = \frac{7\pi}{17}$.
+\subpart $f(x,y) = \sin(x^2-xy)$ evaluated at $x = $, $y = $
+\end{subparts}
+\part \FINISHME{First and second derivatives}
+\begin{subparts}
+\subpart $f(x) = $ evaluated at $x = $.
+\subpart $f(x,y) = $ evaluated at $x = $, $y = $.
+\end{subparts}
+\end{parts}
+
+
+\question \label{Ex 11: AD FEM} Using \verb|step-x| as a base:
+\begin{parts}
+\part Using the nested \verb|Sacado::Fad::DFad| auto-differentiable number type, solve Laplace's equation
+\begin{align*}
+-\Delta u(x,y) = 0 &\quad \textnormal{on} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
+u(x,y) = 0  &\quad \textnormal{on} \quad \partial\Omega_{1}, \quad \textnormal{and} \\
+u(x,y) = 1  &\quad \textnormal{on} \quad \partial\Omega_{2}
+\end{align*}
+on an L-shaped domain with length and width of dimension 1. Here, $\Omega_{2}$ denotes one of the end-edges of the L, and $\partial\Omega_{1} = \partial\Omega \backslash \partial\Omega_{2}$.   \\
+Tip: For this linear problem, you'll need to consider the energy functional
+\begin{gather*}
+\Pi = \frac{1}{2}\int_{\Omega} \nabla u \cdot \nabla u \; \textnormal{dV}.
+\end{gather*}
+\part Extend the above to include the forcing function 
+% WolframAlpha: plot 0.5*cos(5*pi*x*y)+0.5 for x=0..1, y=0..1
+\begin{gather*}
+f(x,y) = \begin{cases}
+1 &\quad \textnormal{if} \quad \frac{1}{2}\cos(5\pi x y)+0.5 > 0.5 \\
+0 &\quad \textnormal{otherwise}.
+\end{cases}
+\end{gather*}
+\end{parts}
+
+\question Additional tasks
+\begin{parts}
+\bonuspart Following up on \ref{Ex 11: AD scalar functions}, try to write a simple nonlinear solution scheme using \verb|Sacado::Fad::DFad| to solve for the roots of $f(x) = 5x^3 + 3x + 1$.
+\bonuspart Following up on \ref{Ex 11: AD FEM}, can you achieve the same goal using a nested\\ \verb|Sacado::Rad::ADvar<Sacado::Fad::DFad>|? How does the performance of this implementation compare to that of the \verb|Sacado::Fad::DFad<Sacado::Fad::DFad>|?
+\end{parts}
+
+\end{questions}
+
+
+% ===== Project ====
+
+
+\clearpage
+\makeprojectheader{Implementing the Cahn-Hiliard equations}{23 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-x| as a base:
+\begin{parts}
+\part x
+\end{parts}
+
+\question Additional tasks
+\begin{parts}
+\bonuspart x
+\end{parts}
+
+\end{questions}
+
+\end{document}
