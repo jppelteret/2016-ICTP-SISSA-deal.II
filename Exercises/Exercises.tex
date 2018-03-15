@@ -367,7 +367,7 @@ $ time ./step-2
 
 
 \clearpage
-\makeheader{7}{MPI parallelisation: \\\texttt{parallel::shared::Triangulation} and \texttt{parallel::distributed::Triangulation}}{21 March 2018}
+\makeheader{7 \& 8}{MPI parallelisation: \\\texttt{parallel::shared::Triangulation} and \texttt{parallel::distributed::Triangulation}}{21 March 2018}
 \makeresources{%
 \url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_17.html} \\
 \url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_18.html} \\
@@ -408,9 +408,9 @@ $ time ./step-2
 \begin{parts}
 \part For the first version of this code, use \verb|parallel::shared::Triangulation| and solve the 2d homogeneous Poisson equation 
 \begin{align*}
--\Delta u(x,y) &= f(x,y) \quad \textnormal{on} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
-u(x,y) &= 0  \quad \textnormal{on} \quad \partial\Omega, \quad \textnormal{and} \\
-f(x,y) &= \begin{cases}
+-\Delta u(\mathbf{x}) &= f(\mathbf{x}) \quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
+u(\mathbf{x}) &= 0  \quad \textnormal{on} \quad \partial\Omega, \quad \textnormal{and} \\
+f(\mathbf{x}) &= \begin{cases}
 1 &\quad \textnormal{if} \quad \vert xy \vert > 0.05 \\
 -1 &\quad \textnormal{otherwise}.
 \end{cases}
@@ -494,20 +494,45 @@ These are the rough steps that you'll need to take to achieve this:
 \clearpage
 \makeheader{10}{Time dependent problems and \texttt{SolutionTransfer}}{22 March 2018}
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html} \\
-\url{https://en.wikipedia.org/wiki/Potential_flow\#Sound_waves}
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_23.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_24.html}
+%\url{https://en.wikipedia.org/wiki/Potential_flow\#Sound_waves}
+%\url{https://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition}
 }
 
 \begin{questions}
 
-\question Using \verb|step-x| as a base:
+\question Using \verb|step-23| as a base (or through appropriate modification of \verb|step-6|) we will be working through the ``Possibilities for extensions'' listed for \verb|step-23|.
 \begin{parts}
-\part x
-\end{parts}
+\part The governing equations for the wave equation are
+\begin{align*}
+\frac{\partial^{2} u(\mathbf{x})}{\partial t^{2}} - u(\mathbf{x}) = f(\mathbf{x})  &\quad \textnormal{in} \quad \Omega \in [0,1]^{2} \times [0, T], \quad \textnormal{with} \\
+u(\mathbf{x},t) = \bar{u}(\mathbf{x})  &\quad \textnormal{on} \quad \partial\Omega
+\intertext{with initial conditions}
+u(\mathbf{x},0) = u_{0}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega, \quad \textnormal{and} \\
+\frac{\partial u(\mathbf{x},0)}{\partial t} = u_{1}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega.
+\end{align*}
+\part Build the boundary conditions into a \verb|ConstraintMatrix|, instead of using \\\verb|MatrixTools::apply_boundary_values|.
+\part Rewrite the linear system solution scheme in the \verb|run| function using the \verb|linear_operator| and  \verb|constrained_linear_operator| class construction functions. (Note: The latter helps prevent having to reconstruct the solution-independent matrices $\mathbf{M}$ and $\mathbf{A}$ at each timestep).
+\part Implement adaptive mesh refinement using the \verb|KellyErrorEstimator|, refining and coarsening the mesh after every $n$-timesteps.
+You now need to consider the discussion in the last point of ``Possibilities for extensions''.
+Basically, during the refinement process you will need to interpolate the solution stored for the previous timestep onto the new mesh; this task can be accomplished using the \verb|SolutionTransfer| class.
+Tip: Take special care when dealing with hanging nodes!
+\part Consider the governing equation with non-homogeneous coefficients
+\begin{gather}
+\rho(\mathbf{x}) \frac{\partial^{2} u(\mathbf{x})}{\partial t^{2}} - \alpha(\mathbf{x}) u(\mathbf{x}) = f(\mathbf{x})
+\end{gather}
+where $t$ denotes the time, $\rho$ the material density and $\alpha$ its stiffness modulus.
+How would you implement a time stepping scheme that better ensures that the CFL condition, namely that
+\begin{gather*}
+\Delta t \leq \frac{h}{c} \quad \textnormal{with} \quad c = \sqrt{\frac{\alpha}{\rho}} \quad ?
+\end{gather*}
+You may look to \verb|step-24|, in particular the discussion in the \verb|setup_system| section, for some tips.
+\end{parts} 
 
 \question Additional tasks
 \begin{parts}
-\bonuspart x
+\bonuspart Investigate the role of the time stepping parameter $\theta$, used as part of the fractional step method.
 \end{parts}
 
 \end{questions}
@@ -519,7 +544,7 @@ These are the rough steps that you'll need to take to achieve this:
 \clearpage
 \makeheader{11}{Automatic differentiation using Sacado}{22 March 2018}
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}\\
 Test-suite
 }
 
@@ -544,23 +569,36 @@ Test-suite
 \begin{parts}
 \part Using the nested \verb|Sacado::Fad::DFad| auto-differentiable number type, solve Laplace's equation
 \begin{align*}
--\Delta u(x,y) = 0 &\quad \textnormal{on} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
-u(x,y) = 0  &\quad \textnormal{on} \quad \partial\Omega_{1}, \quad \textnormal{and} \\
-u(x,y) = 1  &\quad \textnormal{on} \quad \partial\Omega_{2}
+-\Delta u(\mathbf{x}) = 0 &\quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
+u(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega_{1}, \quad \textnormal{and} \\
+u(\mathbf{x}) = 1  &\quad \textnormal{on} \quad \partial\Omega_{2}
 \end{align*}
 on an L-shaped domain with length and width of dimension 1. Here, $\Omega_{2}$ denotes one of the end-edges of the L, and $\partial\Omega_{1} = \partial\Omega \backslash \partial\Omega_{2}$.   \\
 Tip: For this linear problem, you'll need to consider the energy functional
 \begin{gather*}
-\Pi = \frac{1}{2}\int_{\Omega} \nabla u \cdot \nabla u \; \textnormal{dV}.
+\Pi = \frac{1}{2}\int_{\Omega} \nabla u \cdot \nabla u \; \textnormal{dV} 
+\quad \rightarrow \quad \textnormal{min}.
 \end{gather*}
-\part Extend the above to include the forcing function 
+\part Extend the above to include the forcing function  
 % WolframAlpha: plot 0.5*cos(5*pi*x*y)+0.5 for x=0..1, y=0..1
 \begin{gather*}
-f(x,y) = \begin{cases}
-1 &\quad \textnormal{if} \quad \frac{1}{2}\cos(5\pi x y)+0.5 > 0.5 \\
+f(\mathbf{x}) = \begin{cases}
+1 &\quad \textnormal{if} \quad \frac{1}{2}\cos(5\pi x_{1} x_{2})+0.5 > 0.5 \\
 0 &\quad \textnormal{otherwise}.
 \end{cases}
 \end{gather*}
+Tip 1: For this linear problem, you'll need to consider the energy functional
+\begin{gather*}
+\Pi = \frac{1}{2}\int_{\Omega} \nabla u \cdot \nabla u \; \textnormal{dV}
+    + \int_{\Omega} u \cdot f \; \textnormal{dV}
+\quad \rightarrow \quad \textnormal{min}.
+\end{gather*}
+%\FINISHME{Can this be done like this, or does one need to add the traction separately?\\}
+Tip 2: You will also need to recall the finite element discretisation for the solution
+\begin{gather*}
+u (\mathbf{x}) = \sum_{I} N^{I} (\mathbf{x}) \; u^{I}
+\end{gather*}
+where $N^{I}$ is the shape function associated with the $I^{th}$ degree-of-freedom, and $u^{I}$ are solution coefficients.
 \end{parts}
 
 \question Additional tasks
