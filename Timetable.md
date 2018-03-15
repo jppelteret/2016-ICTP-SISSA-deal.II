@@ -53,6 +53,7 @@
 
 #### Exercises
 - *TODO*: Lab time-dependent problem
+  - Change solution procedure to use LinearOperator
 - *TODO*: Lab automatic differentiation
 
 ## Friday 23.03
