@@ -30,6 +30,49 @@
 
 \newcommand{\FINISHME}[1]{\textcolor{red}{#1}}
 
+\usepackage{filecontents}
+\begin{filecontents}{\jobname.bib}
+@Article{Miehe2014d,
+  author    = {C. Miehe and F. E. Hildebrand and L. Boger},
+  title     = {Mixed variational potentials and inherent symmetries of the Cahn-Hilliard theory of diffusive phase separation},
+  journal   = {Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences},
+  year      = {2014},
+  volume    = {470},
+  number    = {2164},
+  pages     = {20130641--20130641},
+  month     = {feb},
+  doi       = {10.1098/rspa.2013.0641},
+  publisher = {The Royal Society},
+  timestamp = {2018.03.12},
+}
+@Article{Miehe2014e,
+  author    = {C. Miehe and S. Mauthe and H. Ulmer},
+  title     = {Formulation and numerical exploitation of mixed variational principles for coupled problems of Cahn-Hilliard-type and standard diffusion in elastic solids},
+  journal   = {International Journal for Numerical Methods in Engineering},
+  year      = {2014},
+  volume    = {99},
+  number    = {10},
+  pages     = {737--762},
+  month     = {jun},
+  doi       = {10.1002/nme.4700},
+  publisher = {Wiley-Blackwell},
+}
+@Article{Kaessmair2016a,
+  author    = {S. Kaessmair and P. Steinmann},
+  title     = {Comparative computational analysis of the Cahn{\textendash}Hilliard equation with emphasis on C1 continuous methods},
+  journal   = {Journal of Computational Physics},
+  year      = {2016},
+  volume    = {322},
+  pages     = {783--803},
+  month     = {oct},
+  doi       = {10.1016/j.jcp.2016.07.005},
+  publisher = {Elsevier {BV}},
+}
+}
+\end{filecontents}
+\usepackage[backend=bibtex]{biblatex}
+\bibliography{\jobname.bib}
+
 \newcommand{\makeheader}[3]{%
 \setcounter{question}{0}
 \begin{center}
@@ -54,7 +97,8 @@ Luca Heltai & (\url{luca.heltai@sissa.it}) & \\
 \newcommand{\makeresources}[1]{%
 \rule{\textwidth}{0.6mm}
 \textbf{Some useful resources}\\[1.5ex]
-#1 \\
+%#1 \\
+#1 \par
 \rule{\textwidth}{0.6mm}
 }
 
@@ -237,10 +281,9 @@ $ time ./step-2
 \part Add a non-zero Dirichlet boundary condition to one edge of the domain.
 \begin{subparts}
 \subpart Set the value to $-0.5$ for the boundary with \hbox{indicator 1}.
-\subpart Tip: Look at the instructions in ``A slight variation of the last point'' in the ``Possibilities for extensions'' section of the tutorial.
+Tip: Look at the instructions in ``A slight variation of the last point'' in the ``Possibilities for extensions'' section of the tutorial.
 \subpart Change the setup to have $f = 0$. Compare this result to that where $f$ is non-zero.
 \end{subparts}
-\part Switch to an L-shaped domain and experiment with a combination of Dirichlet and Neumann boundary conditions. By experimentation, identify the faces adjacent to the re-entrant corner and apply Dirichlet conditions only there.
 \end{parts}
 
 %1. See documentation of step-4 at https://www.dealii.org/8.5.0/doxygen/deal.II/step_4.html
@@ -254,6 +297,9 @@ $ time ./step-2
 \begin{parts}
 \bonuspart Do ``Convergence of the mean''. Can you see the order $h^{2}$? 
 \bonuspart Increase the polynomial order (you need to increase all orders of the quadratures in the program!) and check the convergence of the mean now.
+\bonuspart Switch to an L-shaped domain and experiment with a combination of Dirichlet and Neumann boundary conditions. 
+By experimentation, identify the faces adjacent to the re-entrant corner and apply Dirichlet conditions only there.
+Tip: There is more than one way to generate such a grid using the built-in functions. 
 \end{parts}
 
 \end{questions}
@@ -265,19 +311,47 @@ $ time ./step-2
 \clearpage
 \makeheader{4}{Local refinement, hanging nodes and the \texttt{ConstraintMatrix}}{20 March 2018}
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_4.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_5.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceGridGenerator.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceVectorTools.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceDoFTools.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__constraints.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_49.html}
 }
 
 \begin{questions}
 
-\question Using \verb|step-x| as a base:
+\question Using \verb|step-4| (or your previously modified version of \verb|step-3|) as a base:
 \begin{parts}
-\part x
+\part Solve Laplace's equation
+\begin{align*}
+-\Delta u(\mathbf{x}) = 0 &\quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
+u(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega_{1}, \quad \textnormal{and} \\
+u(\mathbf{x}) = 1  &\quad \textnormal{on} \quad \partial\Omega_{2}
+\end{align*}
+on an L-shaped domain with length and width of dimension 1. Here, $\Omega_{2}$ denotes one of the end-edges of the L, and $\partial\Omega_{1} = \partial\Omega \backslash \partial\Omega_{2}$.
+\part Starting from a coarse grid, perform successive global refinements to increase the accuracy of the solution and to locate the singularity.
+\part \label{Ex 4: Hanging node constraints} Now switch from using global refinement to using local refinement in the vicinity of the singularity.
+To accomplish this, you'll need to build the hanging node constraints. 
+\part Build the Dirichlet boundary directly into a global \verb|ConstraintMatrix|, along with the existing hanging node constraints.
+With this change, several parts of your code need to be modified:
+\begin{subparts}
+\subpart The constraints need to be built in the \verb|setup| function. \\
+Tip: You can use the \verb|VectorTools::interpolate| function here.
+\subpart The \verb|ConstraintMatrix| should be used to distribute local cell and vector contributions to their global counterparts.
+\subpart The constraints must be distributed to the solution.
+\end{subparts}
 \end{parts}
 
 \question Additional tasks
 \begin{parts}
-\bonuspart x
+\bonuspart Following \ref{Ex 4: Hanging node constraints}, what happens if you ``forget'' to distribute the (hanging node) constraints after solving the linear system?
+\bonuspart Instead of using the \verb|VectorTools::interpolate| function, construct the Dirichlet contributions to the \verb|ConstraintMatrix| manually.
+Tip: There are two ways to accomplish this: (1) Use the tools provided in the \verb|DoFTools| namespace, or (2) loop over cell faces and interrogate them for global DoFs that have support there.
+\bonuspart Experiment with some of the other grids in the \verb|GridGenerator| namespace, such as \\\verb|GridGenerator::hyper_cross| and \verb|GridGenerator::cheese|, or create your own by using some of the grid modification tools discussed in \verb|step-49|.
+In each case, find ways to efficiently increase the cell density in the location of singularities.
+\bonuspart Using your existing code, replicate the study performed in \verb|step-5|. Note that the governing equation has changed slightly. Can you further improve the accuracy of the result in \verb|step-5| using Manifolds?
 \end{parts}
 
 \end{questions}
@@ -289,14 +363,38 @@ $ time ./step-2
 \clearpage
 \makeheader{5}{Local (adaptive) refinement and computing errors}{20 March 2018}
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_6.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_7.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__numerics.html}
 }
 
 \begin{questions}
 
-\question Using \verb|step-x| as a base:
+\question Using \verb|step-5| (or your previously modified version of \verb|step-4|) as a base:
 \begin{parts}
-\part x
+\part \begin{align*}
+-\Delta u(\mathbf{x}) &= f(\mathbf{x}) \quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
+u(\mathbf{x}) &= \bar{u}(\mathbf{x})  \quad \textnormal{on} \quad \partial\Omega, \quad \textnormal{and} 
+%\\
+%f(\mathbf{x}) &= \begin{cases}
+%1 &\quad \textnormal{if} \quad \vert xy \vert > 0.05 \\
+%-1 &\quad \textnormal{otherwise}.
+%\end{cases}
+\end{align*}
+\part Set the boundary conditions $\bar{u}(\mathbf{x})$ and forcing function $f(\mathbf{x})$ to get the manufactured solution
+\begin{gather*}
+u(\mathbf{x}) = \sin(\pi x_{1}) \; \cos(\pi x_{2}) .
+\end{gather*}
+Make sure the $\mathcal{L}^{2}$ errors are converging.\\
+Tip: Look at the \verb|VectorTools::integrate_difference| function.
+\part Implement the computation of the $\mathcal{H}^{1}$ error. \\
+Tip: For this you need to compute and implement the gradient of the manufactured solution.
+\part Use the \verb|KellyErrorEstimator| to predict where the regions of geometry where the solution approximation is inaccurate.
+Visualise this error using \verb|Paraview|.
+Do you observe any correlation between the gradient of the solution and the estimated local solution error? \\
+Tip: Use a different quadrature rule to prevent super-convergent effects when using the \verb|KellyErrorEstimator|.
+\part Perform local cell marking and refinement using the cell-based estimated error.
+For this, the logic of the \verb|refine_mesh| function must be modified.
 \end{parts}
 
 % Lab 5
@@ -329,7 +427,19 @@ $ time ./step-2
 
 \question Additional tasks
 \begin{parts}
-\bonuspart x
+\bonuspart Compare the convergence rates (number of DoFs versus the solution error, best viewed in a log-log plot) when using global refinement and when using local refinement with the Kelly error estimator.
+\bonuspart Investigate the influence of the coarsening and refinement parameters on the solution accuracy.
+\bonuspart Investigate the effect of changing the polynomial order for the solution ansatz on the solution accuracy.
+\bonuspart Integrate a non-constant coefficient into the governing equation, i.e. solve
+\begin{gather*}
+-\alpha(\mathbf{x}) \Delta u(\mathbf{x}) = f(\mathbf{x}) \quad \textnormal{in} \quad \Omega
+\end{gather*}
+where $\alpha(\mathbf{x})$ represents some material parameter.
+Repeat the calculation of the error using the \verb|KellyErrorEstimator|, while taking this spatially dependent coefficient into consideration. 
+Tip: Look at the documentation for the \verb|KellyErrorEstimator| before deciding on how to implement $\alpha(\mathbf{x})$.
+\bonuspart Choose $\alpha(\mathbf{x})$ to be spatially discontinuous.
+Do you observe any correlation between the location of the material discontinuity and the estimated local solution error?
+What influence does this have on the location of the refined cells?
 \end{parts}
 
 \end{questions}
@@ -470,7 +580,10 @@ These are the rough steps that you'll need to take to achieve this:
 \clearpage
 \makeheader{9}{?????}{22 March 2018}
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/classParameterHandler.html} \\
+\url{https://www.dealii.org/developer/doxygen/deal.II/classParameterAcceptor.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__LAOperators.html}
 }
 
 \begin{questions}
@@ -495,9 +608,13 @@ These are the rough steps that you'll need to take to achieve this:
 \makeheader{10}{Time dependent problems and \texttt{SolutionTransfer}}{22 March 2018}
 \makeresources{%
 \url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_23.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_24.html}
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_24.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__LAOperators.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__constraints.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceTimeStepping.html}
 %\url{https://en.wikipedia.org/wiki/Potential_flow\#Sound_waves}
 %\url{https://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition}
+%https://www.dealii.org/developer/doxygen/deal.II/step_52.html
 }
 
 \begin{questions}
@@ -533,6 +650,7 @@ You may look to \verb|step-24|, in particular the discussion in the \verb|setup_
 \question Additional tasks
 \begin{parts}
 \bonuspart Investigate the role of the time stepping parameter $\theta$, used as part of the fractional step method.
+\bonuspart Rewrite the timestepping scheme making use of the \verb|TimeStepping| class. An example of the use of \verb|RungeKutta| methods is given in \href{https://www.dealii.org/developer/doxygen/deal.II/step_52.html}{\texttt{step-52}}.
 \end{parts}
 
 \end{questions}
@@ -544,8 +662,14 @@ You may look to \verb|step-24|, in particular the discussion in the \verb|setup_
 \clearpage
 \makeheader{11}{Automatic differentiation using Sacado}{22 March 2018}
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}\\
-Test-suite
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_6.html}\\
+deal.II test-suite: \\
+\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01.cc}\\
+\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01a.cc}\\
+\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01b.cc}\\
+\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02.cc}\\
+\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02a.cc}\\
+\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02b.cc}
 }
 
 \begin{questions}
@@ -615,10 +739,18 @@ where $N^{I}$ is the shape function associated with the $I^{th}$ degree-of-freed
 
 \clearpage
 \makeprojectheader{Implementing the Cahn-Hiliard equations}{23 March 2018}
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+%\leavevmode
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+\vspace*{-3\parsep}
+\begin{enumerate}
+\item 
+\fullcite{Miehe2014d}
+\item \fullcite{Miehe2014e}
+\item \fullcite{Kaessmair2016a}
+\end{enumerate}%
+\vspace*{-\parsep}
 }
-
 \begin{questions}
 
 \question Using \verb|step-x| as a base:
