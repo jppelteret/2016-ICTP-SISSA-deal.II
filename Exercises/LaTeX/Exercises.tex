@@ -28,8 +28,6 @@
 
 \pagestyle{empty}
 
-\newcommand{\FINISHME}[1]{\textcolor{red}{#1}}
-
 \usepackage{filecontents}
 \begin{filecontents}{\jobname.bib}
 @Article{Miehe2014d,
@@ -68,6 +66,18 @@
   doi       = {10.1016/j.jcp.2016.07.005},
   publisher = {Elsevier {BV}},
 }
+@Article{Wodo2011a,
+  author    = {O. Wodo and B. Ganapathysubramanian},
+  title     = {Computationally efficient solution to the Cahn{\textendash}Hilliard equation: Adaptive implicit time schemes, mesh sensitivity analysis and the 3D isoperimetric problem},
+  journal   = {Journal of Computational Physics},
+  year      = {2011},
+  volume    = {230},
+  number    = {15},
+  pages     = {6037--6060},
+  month     = {jul},
+  doi       = {10.1016/j.jcp.2011.04.012},
+  publisher = {Elsevier {BV}},
+}
 }
 \end{filecontents}
 \usepackage[backend=bibtex]{biblatex}
@@ -102,42 +112,44 @@ Luca Heltai & (\url{luca.heltai@sissa.it}) & \\
 \rule{\textwidth}{0.6mm}
 }
 
+\newcommand{\FINISHME}[1]{\textcolor{red}{#1}}
+
 
 \begin{document}
 
-% ===== EXERCISE 0: Setup ====
-
-\clearpage
-\makeheader{0}{Setting up the IDE}{19 March 2018}
-\makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_1.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_49.html}
-}
-
-\begin{itemize}
-\item Edit the file \verb|~/.bashrc| to contain the line source \verb|/scratch/smr2909/enable.sh|. 
-You can use gedit \verb|~/.bashrc| to open an editor. 
-\item Close and re-open your terminal to activate the changes.
-\item Check that this worked by typing \verb|echo $DEAL_II_DIR|. 
- You should see\\\verb|/scratch/smr2909/deal.II/install| printed to the screen.
-\item Please note that inside \verb|/scratch/smr2909/| there are the following folders:
-\begin{itemize}
-\item \verb|labs/| -- a folder with exercise sheets and example programs
-\item \verb|bin/| and \verb|apps/| -- several programs (you shouldn't need to access them directly, because they will be imported into your \verb|PATH| automatically)
-\item \verb|libs/|, \verb|candi/|, \verb|candi-build| -- libraries deal.II depends on.
-\item \verb|deal.II| -- source, build, and installation of deal.II.
-\item \verb|deal.II/dealii/examples/| -- all tutorial programs.
-\end{itemize}
-\item To make a copy of \verb|step-1|, configure, compile, and run it:
-\begin{lstlisting}[language=bash]
-$ cp -r /scratch/smr2909/labs/lab01/step-1 ~/
-$ cd ~/step-1
-$ cmake .
-$ make
-$ ./step-1
-\end{lstlisting}
-\item  IDE: open \verb|Qt Creator|.
-\end{itemize}
+%% ===== EXERCISE 0: Setup ====
+%
+%\clearpage
+%\makeheader{0}{Setting up the IDE}{19 March 2018}
+%\makeresources{%
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_1.html} \\
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_49.html}
+%}
+%
+%\begin{itemize}
+%\item Edit the file \verb|~/.bashrc| to contain the line source \verb|/scratch/smr2909/enable.sh|. 
+%You can use gedit \verb|~/.bashrc| to open an editor. 
+%\item Close and re-open your terminal to activate the changes.
+%\item Check that this worked by typing \verb|echo $DEAL_II_DIR|. 
+% You should see\\\verb|/scratch/smr2909/deal.II/install| printed to the screen.
+%\item Please note that inside \verb|/scratch/smr2909/| there are the following folders:
+%\begin{itemize}
+%\item \verb|labs/| -- a folder with exercise sheets and example programs
+%\item \verb|bin/| and \verb|apps/| -- several programs (you shouldn't need to access them directly, because they will be imported into your \verb|PATH| automatically)
+%\item \verb|libs/|, \verb|candi/|, \verb|candi-build| -- libraries deal.II depends on.
+%\item \verb|deal.II| -- source, build, and installation of deal.II.
+%\item \verb|deal.II/dealii/examples/| -- all tutorial programs.
+%\end{itemize}
+%\item To make a copy of \verb|step-1|, configure, compile, and run it:
+%\begin{lstlisting}[language=bash]
+%$ cp -r /scratch/smr2909/labs/lab01/step-1 ~/
+%$ cd ~/step-1
+%$ cmake .
+%$ make
+%$ ./step-1
+%\end{lstlisting}
+%\item  IDE: open \verb|Qt Creator|.
+%\end{itemize}
 
 
 % ===== EXERCISE 1: Triangulation ====
@@ -155,7 +167,7 @@ $ ./step-1
 \question Using \verb|step-1| as a base:
 
 \begin{parts}
-\part Compile and run this tutorial inside \verb|Qt Creator| and inspect at the output.
+\part Compile and run this tutorial on the command line or inside a suitable IDE, and inspect at the output.
 \part Create a helper function that takes a reference to a Triangulation and prints the following information: 
 \begin{itemize}
 \item number of levels
@@ -171,7 +183,7 @@ Test this with all of your meshes.
 \part Output mesh two as an svg file instead of eps. 
  Open it in a browser to display it (firefox for example).
 \part Go into \verb|second_grid()| and remove the last line (\verb|.set_manifold(0);|). The program will crash when you run it. 
-Try to find out what is going on by debugging the program \hbox{(``Debug'' $\rightarrow$ ``Start debugging'' in \verb|Qt Creator|)} and stepping through the function \linebreak\hbox{\verb|second_grid()|}. 
+Try to find out what is going on by debugging the program \hbox{(e.g. For \verb|Qt Creator|: ``Debug'' $\rightarrow$ ``Start debugging'')} and stepping through the function \linebreak\hbox{\verb|second_grid()|}. 
 You can fix this problem in a more elegant way than putting the line you removed back in. 
 How? See the tutorial description for more info.
 \end{parts}
@@ -198,6 +210,7 @@ How? See the tutorial description for more info.
 
 \question Additional tasks
 \begin{parts}
+%\bonuspart Create a regular grid; assign material IDs in checkerboard pattern; verify IDs
 \bonuspart Create a mesh that represents the surface of a torus and refine it 2 times globally. Output to \verb|vtk| format and check the output. Note that your \verb|Triangulation| needs to be of type \verb|Triangulation<2,3>| (not explicitly discussed in this course).
 \end{parts}
 
@@ -222,13 +235,13 @@ How? See the tutorial description for more info.
 
 \question Using \verb|step-2| as a base:
 \begin{parts}
-\part Compile and run this tutorial inside \verb|Qt Creator| and inspect at the output.
+\part Compile and run this tutorial, and inspect at the output.
 \part Look at the generated sparsity patterns in firefox.
 \end{parts}
 
 \question Investigate:
 \begin{parts}
-\part How does the pattern change if you increase the polynomial degree from 1 to 2 or to 3?
+\part How does the pattern change if you increase the polynomial degree from 1 to 2, or to 3?
 \part \label{Ex 2: Refined unit square} How does the pattern change if you use a globally refined (say 3 times) unit square?
 \part Are these patterns symmetric? Why/why not?
 \part How many entries per row in the sparsity pattern do you expect for a \verb|Q1| element (assuming four cells are around each vertex)? 
@@ -250,7 +263,7 @@ How? See the tutorial description for more info.
 $ time ./step-2
 \end{lstlisting}
 \bonuspart What happens if you change the mesh from 2d to 3d?
-\bonuspart Investigate the sparsity patterns generated for other types of \verb|FiniteElement|s.
+\bonuspart Investigate the sparsity patterns generated for other types of \verb|FiniteElement|s of varying order.
 \end{parts}
 
 \end{questions}
@@ -270,17 +283,17 @@ $ time ./step-2
 
 \question Using \verb|step-3| as a base:
 \begin{parts}
-\part Compile and run this tutorial inside \verb|Qt Creator| and inspect at the output.
+\part Compile and run this tutorial, and inspect at the output.
 \part Modify the code so that the problem is dimension-independent.
 \part Switch to \verb|vtk| output and visualize in \verb|Paraview|. Figure out how to warp the solution by the solution variable.
 \part Add a zero Neumann boundary condition to one edge of the domain.
-\begin{subparts}
-\subpart Assign this Neumann boundary the indicator 1.
-\subpart Tip: Look at the instructions in ``Modify the type of boundary condition'' in the ``Possibilities for extensions'' section of the tutorial.
-\end{subparts}
+%\begin{subparts}
+Assign this Neumann boundary the indicator 1. \\
+Tip: Look at the instructions in ``Modify the type of boundary condition'' in the ``Possibilities for extensions'' section of the tutorial.
+%\end{subparts}
 \part Add a non-zero Dirichlet boundary condition to one edge of the domain.
 \begin{subparts}
-\subpart Set the value to $-0.5$ for the boundary with \hbox{indicator 1}.
+\subpart Set the value to $-0.5$ for the boundary with \hbox{indicator 1}. \\
 Tip: Look at the instructions in ``A slight variation of the last point'' in the ``Possibilities for extensions'' section of the tutorial.
 \subpart Change the setup to have $f = 0$. Compare this result to that where $f$ is non-zero.
 \end{subparts}
@@ -298,7 +311,7 @@ Tip: Look at the instructions in ``A slight variation of the last point'' in the
 \bonuspart Do ``Convergence of the mean''. Can you see the order $h^{2}$? 
 \bonuspart Increase the polynomial order (you need to increase all orders of the quadratures in the program!) and check the convergence of the mean now.
 \bonuspart Switch to an L-shaped domain and experiment with a combination of Dirichlet and Neumann boundary conditions. 
-By experimentation, identify the faces adjacent to the re-entrant corner and apply Dirichlet conditions only there.
+By experimentation, identify the faces adjacent to the re-entrant corner and apply Dirichlet conditions only there. \\
 Tip: There is more than one way to generate such a grid using the built-in functions. 
 \end{parts}
 
@@ -351,7 +364,10 @@ Tip: You can use the \verb|VectorTools::interpolate| function here.
 Tip: There are two ways to accomplish this: (1) Use the tools provided in the \verb|DoFTools| namespace, or (2) loop over cell faces and interrogate them for global DoFs that have support there.
 \bonuspart Experiment with some of the other grids in the \verb|GridGenerator| namespace, such as \\\verb|GridGenerator::hyper_cross| and \verb|GridGenerator::cheese|, or create your own by using some of the grid modification tools discussed in \verb|step-49|.
 In each case, find ways to efficiently increase the cell density in the location of singularities.
-\bonuspart Using your existing code, replicate the study performed in \verb|step-5|. Note that the governing equation has changed slightly. Can you further improve the accuracy of the result in \verb|step-5| using Manifolds?
+\bonuspart Using your existing code, replicate the study performed in \verb|step-5|. 
+Note that the governing equation has changed slightly. 
+Can you further improve the accuracy of the result in \verb|step-5| using Manifolds?
+Tip: Look to the discussion ``A better mesh'' in the ``Possibilities for extensions'' section of \verb|step-6|.
 \end{parts}
 
 \end{questions}
@@ -397,6 +413,29 @@ Tip: Use a different quadrature rule to prevent super-convergent effects when us
 For this, the logic of the \verb|refine_mesh| function must be modified.
 \end{parts}
 
+\begin{solution}
+Method of manufactured solutions:\\
+See \url{http://www.personal.psu.edu/jhm/ME540/lectures/VandV/MMS_summary.pdf}
+\begin{align*}
+u(\mathbf{x}) 
+ &= \sin(\pi x_{1}) \; \cos(\pi x_{2}) \\
+\nabla u(\mathbf{x}) 
+ &=\begin{bmatrix}
+ \pi \cos(\pi x_{1}) \; \cos(\pi x_{2}) \\
+ -\pi \sin(\pi x_{1}) \; \sin(\pi x_{2})
+ \end{bmatrix} \\
+\nabla \cdot \left[ \nabla u(\mathbf{x}) \right]
+  = \Delta u(\mathbf{x})  
+ &= -\pi^{2} \left[ \sin(\pi x_{1}) \; \cos(\pi x_{2}) + \sin(\pi x_{1}) \; \cos(\pi x_{2}) \right] \\
+ &= -2\pi^{2} u(\mathbf{x}) 
+\end{align*}
+Therefore, we need to set 
+\begin{align*}
+\bar{u}(\mathbf{x}) &= \sin(\pi x_{1}) \; \cos(\pi x_{2}) \\
+f(\mathbf{x}) &= -2\pi^{2} \bar{u}(\mathbf{x}) 
+\end{align*}
+\end{solution}
+
 % Lab 5
 %1. The topic of this lab session is a modified version of step-4 made available for you https://www.dealii. org/8.5.0/doxygen/deal.II/step_4.html
 %2. For more information about computing errors see step-7 (it is a bit more complicated though) https: //www.dealii.org/8.5.0/doxygen/deal.II/step_7.html
@@ -440,6 +479,8 @@ Tip: Look at the documentation for the \verb|KellyErrorEstimator| before decidin
 \bonuspart Choose $\alpha(\mathbf{x})$ to be spatially discontinuous.
 Do you observe any correlation between the location of the material discontinuity and the estimated local solution error?
 What influence does this have on the location of the refined cells?
+Tip: Verify your conclusions by looking to the results of \verb|step-6|.
+Further information can be found in the discussion ``Playing with the regularity of the solution'' in the ``Possibilities for extensions'' section of \verb|step-6|.
 \end{parts}
 
 \end{questions}
@@ -451,14 +492,21 @@ What influence does this have on the location of the refined cells?
 \clearpage
 \makeheader{6}{Shared memory parallelisation}{20 March 2018}
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceWorkStream.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/classFEValuesBase.html}
 }
 
 \begin{questions}
 
-\question Using \verb|step-x| as a base:
+\question Using the outcome of the previous exercise as a base:
 \begin{parts}
-\part x
+\part Parallelise the following parts of your code using \verb|TBB| via the \verb|WorkStream| class:
+\begin{subparts}
+\subpart The (manual) calculation of the solution $\mathcal{L}^{2}$ norm.
+\subpart The assembly loop.
+\end{subparts}
+\part Investigate the possible speed-up by playing around with the number of threads set in the call to \verb|Utilities::MPI::MPI_InitFinalize|.
 \end{parts}
 
 %- Assembly
@@ -467,7 +515,14 @@ What influence does this have on the location of the refined cells?
 
 \question Additional tasks
 \begin{parts}
-\bonuspart x
+\bonuspart What influence do the \verb|queue_length| and \verb|chunk_size| have on the efficiency of the various parallel operations that you have implemented?
+\bonuspart Implement additional data post-processors, parallelise them, and visualise their output:
+\begin{subparts}
+\subpart The cell-wise material identifier.
+\subpart The cell-wise solution $\mathcal{L}^{2}$ norm. % Note: This requires get_function_values() to be used.
+\subpart The cell-wise solution error $\mathcal{L}^{2}$ norm.
+\end{subparts}
+Tip: All of these outputs can be stored in a regular \verb|Vector| of length equal to the number of cells in the triangulation.
 \end{parts}
 
 \end{questions}
@@ -588,6 +643,30 @@ These are the rough steps that you'll need to take to achieve this:
 
 \begin{questions}
 
+\question \FINISHME{Possible exercise outline?}
+\FINISHME{
+\begin{itemize}
+\item Use Git to manage this project
+  \begin{itemize}
+  \item \url{https://github.com/dealii/dealii/wiki/Contributing}
+  \item Start at a previous step
+  \item Commit this to master
+  \item Create a new branch and work off of enhancements there
+  \end{itemize}
+\item Extend example to use ParameterHandler
+  \begin{itemize}
+  \item Constant coefficient for two material zones
+  \item Function parser for RHS function / boundary conditions
+  \end{itemize}
+\item Use linear operator:
+  \begin{itemize}
+  \item Solve initial problem using normal linear operators
+  \item Next, solve problem using constrained linear operator
+  \end{itemize}
+\item Add some doxygen documentation?
+\end{itemize}
+}
+
 \question Using \verb|step-x| as a base:
 \begin{parts}
 \part x
@@ -624,7 +703,7 @@ These are the rough steps that you'll need to take to achieve this:
 \part The governing equations for the wave equation are
 \begin{align*}
 \frac{\partial^{2} u(\mathbf{x})}{\partial t^{2}} - u(\mathbf{x}) = f(\mathbf{x})  &\quad \textnormal{in} \quad \Omega \in [0,1]^{2} \times [0, T], \quad \textnormal{with} \\
-u(\mathbf{x},t) = \bar{u}(\mathbf{x})  &\quad \textnormal{on} \quad \partial\Omega
+u(\mathbf{x},t) = \bar{u}(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega
 \intertext{with initial conditions}
 u(\mathbf{x},0) = u_{0}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega, \quad \textnormal{and} \\
 \frac{\partial u(\mathbf{x},0)}{\partial t} = u_{1}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega.
@@ -633,7 +712,7 @@ u(\mathbf{x},0) = u_{0}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega, \quad 
 \part Rewrite the linear system solution scheme in the \verb|run| function using the \verb|linear_operator| and  \verb|constrained_linear_operator| class construction functions. (Note: The latter helps prevent having to reconstruct the solution-independent matrices $\mathbf{M}$ and $\mathbf{A}$ at each timestep).
 \part Implement adaptive mesh refinement using the \verb|KellyErrorEstimator|, refining and coarsening the mesh after every $n$-timesteps.
 You now need to consider the discussion in the last point of ``Possibilities for extensions''.
-Basically, during the refinement process you will need to interpolate the solution stored for the previous timestep onto the new mesh; this task can be accomplished using the \verb|SolutionTransfer| class.
+Basically, during the refinement process you will need to interpolate the solution stored for the previous timestep onto the new mesh; this task can be accomplished using the \verb|SolutionTransfer| class. \\
 Tip: Take special care when dealing with hanging nodes!
 \part Consider the governing equation with non-homogeneous coefficients
 \begin{gather}
@@ -679,7 +758,17 @@ deal.II test-suite: \\
 \part \FINISHME{First derivatives only}
 \begin{subparts}
 \subpart $f(x) = \exp(2x)\ln(-2x)$ evaluated at $x = \frac{7\pi}{17}$.
+\begin{solution}
+% WolframAlpha: derivative of exp(2x)*ln(-2x)
+$\frac{\exp{(2 x)} (2 \ln(-2 x) + 1)}{x}$
+\end{solution}
 \subpart $f(x,y) = \sin(x^2-xy)$ evaluated at $x = $, $y = $
+\begin{solution}
+% WolframAlpha: derivative of sin(x*x - x*y) wrt x
+$(2 x - y) \cos(x (x - y))$
+% WolframAlpha: derivative of sin(x*x - x*y) wrt y
+$-x \cos(x (x - y))$
+\end{solution}
 \end{subparts}
 \part \FINISHME{First and second derivatives}
 \begin{subparts}
@@ -744,14 +833,45 @@ where $N^{I}$ is the shape function associated with the $I^{th}$ degree-of-freed
 \makeresources{%
 \vspace*{-3\parsep}
 \begin{enumerate}
-\item 
-\fullcite{Miehe2014d}
+\item \fullcite{Miehe2014d}
 \item \fullcite{Miehe2014e}
 \item \fullcite{Kaessmair2016a}
+\item \fullcite{Wodo2011a}
 \end{enumerate}%
 \vspace*{-\parsep}
 }
 \begin{questions}
+
+\question \FINISHME{Finish this}
+\FINISHME{
+\begin{itemize}
+\item Implement a solution to the Cahn-Hiliard equation
+\begin{itemize}
+\item Implementation based on Miehe paper
+\item Scalar (non-coupled) time dependent problem.
+\item Is it possible to implement other time stepping schemes? Miehe explicity uses backward Euler
+\item We have a base solution for the elastic-coupled problem, courtesy of S. Kaessmair which we can use to validate the student's work (we should attribute him on the tutorial as well).
+\item Timestepping: 
+\item Starting concentration: !=0.5 (0.5 leads to a bubble)
+\end{itemize}
+\item Parallelisation using MPI
+\item Assembly using automatic differentiation (Sacado)
+\begin{itemize}
+\item Start with formulation based on energy functional (twice differentiated)
+\item Next do residual-based formulation (one differentiated)
+\item Lastly, do full manual linearisation
+\end{itemize}
+\item Local adaptivity
+\begin{itemize}
+\item Ensuring conservation properties is important, as the solution can get stuck in a local equilibrium (e.g. parallel bands of concentrated material)
+\item Refinement strategy around regions of high concentration gradient. Manual refinement strategy vs using e.g. Kelly error estimator. Need at least 4 cells in the band of changing concentration.
+\item Solution transfer; implications for time-stepping algorithm
+\end{itemize}
+\item Consolidate everything learned in the course
+\item Add this as a tutorial to the deal.II library
+\item Open a pull-request on Github
+\end{itemize}
+}
 
 \question Using \verb|step-x| as a base:
 \begin{parts}
