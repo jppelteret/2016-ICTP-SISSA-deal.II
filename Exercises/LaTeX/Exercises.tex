@@ -181,7 +181,7 @@ Test this with all of your meshes.
 \begin{parts}
 \part Comment out the \verb|.set_manifold(0, ...)| line in \verb|second_grid()|. What happens now?
 \part Output mesh two as an svg file instead of eps. 
- Open it in a browser to display it (firefox for example).
+ Open it in a browser to display it (\verb|Firefox|, for example).
 \part Go into \verb|second_grid()| and remove the last line (\verb|.set_manifold(0);|). The program will crash when you run it. 
 Try to find out what is going on by debugging the program \hbox{(e.g. For \verb|Qt Creator|: ``Debug'' $\rightarrow$ ``Start debugging'')} and stepping through the function \linebreak\hbox{\verb|second_grid()|}. 
 You can fix this problem in a more elegant way than putting the line you removed back in. 
@@ -198,7 +198,11 @@ How? See the tutorial description for more info.
 \part Create an image of an L-shape domain with one global refinement.
 \begin{subparts}
 \subpart Inspect the mesh in \verb|Paraview|.
-\subpart Refine the L-shaped mesh adaptively around the re-entrant corner several times but with a twist: refine all cells with the distance between the center of the cell and re-entrant corner is smaller than $\frac{1}{3}$.
+\subpart Refine the L-shaped mesh adaptively:
+\begin{subsubparts}
+\subsubpart Refine all cells with the distance between the center of the cell and re-entrant corner is smaller than $\frac{1}{3}$.
+\subsubpart Refine exactly at the re-entrant corner (i.e. those with the corner as a vertex) several times.
+\end{subsubparts}
 \end{subparts}
 \end{parts}
 
@@ -236,7 +240,7 @@ How? See the tutorial description for more info.
 \question Using \verb|step-2| as a base:
 \begin{parts}
 \part Compile and run this tutorial, and inspect at the output.
-\part Look at the generated sparsity patterns in firefox.
+\part Look at the generated sparsity patterns (\verb|Firefox|, for example).
 \end{parts}
 
 \question Investigate:
@@ -469,7 +473,7 @@ f(\mathbf{x}) &= -2\pi^{2} \bar{u}(\mathbf{x})
 \bonuspart Compare the convergence rates (number of DoFs versus the solution error, best viewed in a log-log plot) when using global refinement and when using local refinement with the Kelly error estimator.
 \bonuspart Investigate the influence of the coarsening and refinement parameters on the solution accuracy.
 \bonuspart Investigate the effect of changing the polynomial order for the solution ansatz on the solution accuracy.
-\bonuspart Integrate a non-constant coefficient into the governing equation, i.e. solve
+\bonuspart Integrate a non-constant coefficient into the governing equation, i.e. solve the heterogeneous Poisson equation
 \begin{gather*}
 -\alpha(\mathbf{x}) \Delta u(\mathbf{x}) = f(\mathbf{x}) \quad \textnormal{in} \quad \Omega
 \end{gather*}
@@ -498,6 +502,16 @@ Further information can be found in the discussion ``Playing with the regularity
 }
 
 \begin{questions}
+
+\question \FINISHME{TaskGroup
+\begin{itemize}
+\item Note: Output using DataOut in tasks leads to seg fault (?) - get them to investigate this
+\item What else could they parallelise? Maybe get them to investigate this themselves?
+\begin{itemize}
+\item Assembly - would need to create a PerTaskData like struct per task
+\end{itemize}
+\end{itemize}
+}
 
 \question Using the outcome of the previous exercise as a base:
 \begin{parts}
@@ -599,7 +613,7 @@ These are the rough steps that you'll need to take to achieve this:
 \begin{parts}
 \bonuspart Compare the distribution of cells across the processes for the two implementation. Is there a difference and, if so, why?
 \bonuspart For this problem, measure the performance difference between the two implementations. What, do you think, are the primary factors affecting any differences you notice?
-\bonuspart \FINISHME{Non-homogeneous Poisson equation?}
+\bonuspart \FINISHME{Heterogeneous Poisson equation?}
 \end{parts}
 
 \end{questions}
@@ -655,8 +669,11 @@ These are the rough steps that you'll need to take to achieve this:
   \end{itemize}
 \item Extend example to use ParameterHandler
   \begin{itemize}
-  \item Constant coefficient for two material zones
+  \item Constant coefficient for two material zones (heterogenous Poisson)
   \item Function parser for RHS function / boundary conditions
+  \item Solver (iterative + direct)
+  \item Preconditioner
+  \item Tolerances
   \end{itemize}
 \item Use linear operator:
   \begin{itemize}
