@@ -7,7 +7,7 @@
 | 09:30 | 1.25 hours | Introduction<br>First steps [Steps 1,2] | JPP |
 | 11:15 | 1.25 hours | Introduction to FEM | LH |
 |<td colspan=3>LUNCH</td>|
-| 14:00 | 1.25 hours | Solving Poisson's equation [Step 3] <br> Dimension independent programming [Step 4] | JPP |
+| 14:00 | 1.25 hours | Solving Poisson's equation [Steps 3,4] | JPP |
 | 15:45 | 1.25 hours | Exercises, Q&A | JPP, LH |
 
 #### Exercises
@@ -24,8 +24,9 @@
 | 15:45 | 1.25 hours | Exercises, Q&A | JPP, LH |
 
 #### Exercises
-- 2017 Lab 05,07
-- *TODO*: Lab TBB
+- Lab Local refinement
+- Lab adaptive refinement
+- Lab TBB
 
 ## Wednesday 21.03
 
@@ -38,23 +39,22 @@
 | 15:45 | 1.25 hours | Exercises, Q&A | JPP, LH |
 
 #### Exercises
-- *TODO*: Lab parallel::shared + PETSc
-- *TODO*: Lab parallel::distributed + Trilinos
+- Lab parallel::shared + PETSc
+- Lab parallel::distributed + Trilinos
 
 ## Thursday 22.03
 
 | Time | Duration | Title | Speaker  |
 |:-----|:---------|:------|:---------|
-| 09:30 | 1.25 hours | Parameter handler / acceptor; Git workflow; Linear operator | JPP |
+| 09:30 | 1.25 hours | Utility classes and functions; Git workflow | JPP |
 | 11:15 | 1.25 hours | Time dependent problems [Step 23]; Solution transfer | JPP |
 |<td colspan=3>LUNCH</td>|
 | 14:00 | 1.25 hours | Automatic differentiation | JPP |
-| 15:45 | 1.25 hours | Exercises | JPP |
+| 15:45 | 1.25 hours | Exercises, Q&A | JPP |
 
 #### Exercises
-- *TODO*: Lab time-dependent problem
-  - Change solution procedure to use LinearOperator
-- *TODO*: Lab automatic differentiation
+- Lab time-dependent problem
+- Lab automatic differentiation
 
 ## Friday 23.03
 
@@ -78,47 +78,3 @@
     - Residual
     - Full residual + linearisation (?)
 - Make PR to deal.II library
-
-------------
-
-Information
-- http://indico.ictp.it/event/7751/overview
-- http://indico.ictp.it/event/7751/other-view?view=ictptimetable
-
-Summary
-- DAY 1: Compressed version of 2016 day 1, 2 (step 1-3 + ddim programming) ; Laplace, dim indep.
-  - [JP] Step 1,2
-  - Break
-  - [LUCA] FEM intro
-  - Dim inp. programming; Error adaptivity
-
-- DAY 2:
-  - ... step 6 [up to end of morning]
-  - parallelisation strategies
-    - TBB
-    - Shared
-
-- DAY 3:
-  - Full day: MPI parallelisation (Thus 2016 lectures)
-    - Parallel version of Laplace (step 40)
-
-- DAY 4 & 5:
-  - Advanced topics:
-    - Parameter acceptor
-    - Local refinement
-    - Manifolds
-    - Git workflow for complex libraries
-    - Nonlinear problem
-    - AD? - Yes (Thurs morn / afternoon)
-      - Laplace
-        - AD;
-      - Elastic energy; compute res + tangent
-      - Needs development version (docker)
-    - Building up coupled problems? - No; too complex
-  - Goal:
-    - Cahn-Hilliard with Sacado in parallel
-    - Make PR to deal.II library
-
-Introduction
-- Who the students are
-- What they hope to achieve
