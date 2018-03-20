@@ -1,5 +1,5 @@
-%\documentclass[11pt,addpoints]{exam}
-\documentclass[11pt,answers]{exam}
+\documentclass[11pt]{exam}
+%\documentclass[11pt,answers]{exam}
 
 \usepackage[a4paper,margin=2cm]{geometry}
 \parskip   2ex
@@ -321,67 +321,11 @@ Tip: There is more than one way to generate such a grid using the built-in funct
 
 \end{questions}
 
-
-% ===== EXERCISE 4: Local refinement, hanging nodes and the ConstraintMatrix ====
-
-
-\clearpage
-\makeheader{4}{Local refinement, hanging nodes and the \texttt{ConstraintMatrix}}{20 March 2018}
-\makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_4.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_5.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceGridGenerator.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceVectorTools.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceDoFTools.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__constraints.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_49.html}
-}
-
-\begin{questions}
-
-\question Using \verb|step-4| (or your previously modified version of \verb|step-3|) as a base:
-\begin{parts}
-\part Solve Laplace's equation
-\begin{align*}
--\Delta u(\mathbf{x}) = 0 &\quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
-u(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega_{1}, \quad \textnormal{and} \\
-u(\mathbf{x}) = 1  &\quad \textnormal{on} \quad \partial\Omega_{2}
-\end{align*}
-on an L-shaped domain with length and width of dimension 1. Here, $\Omega_{2}$ denotes one of the end-edges of the L, and $\partial\Omega_{1} = \partial\Omega \backslash \partial\Omega_{2}$.
-\part Starting from a coarse grid, perform successive global refinements to increase the accuracy of the solution and to locate the singularity.
-\part \label{Ex 4: Hanging node constraints} Now switch from using global refinement to using local refinement in the vicinity of the singularity.
-To accomplish this, you'll need to build the hanging node constraints. 
-\part Build the Dirichlet boundary directly into a global \verb|ConstraintMatrix|, along with the existing hanging node constraints.
-With this change, several parts of your code need to be modified:
-\begin{subparts}
-\subpart The constraints need to be built in the \verb|setup| function. \\
-Tip: You can use the \verb|VectorTools::interpolate| function here.
-\subpart The \verb|ConstraintMatrix| should be used to distribute local cell and vector contributions to their global counterparts.
-\subpart The constraints must be distributed to the solution.
-\end{subparts}
-\end{parts}
-
-\question Additional tasks
-\begin{parts}
-\bonuspart Following \ref{Ex 4: Hanging node constraints}, what happens if you ``forget'' to distribute the (hanging node) constraints after solving the linear system?
-\bonuspart Instead of using the \verb|VectorTools::interpolate| function, construct the Dirichlet contributions to the \verb|ConstraintMatrix| manually.
-Tip: There are two ways to accomplish this: (1) Use the tools provided in the \verb|DoFTools| namespace, or (2) loop over cell faces and interrogate them for global DoFs that have support there.
-\bonuspart Experiment with some of the other grids in the \verb|GridGenerator| namespace, such as \\\verb|GridGenerator::hyper_cross| and \verb|GridGenerator::cheese|, or create your own by using some of the grid modification tools discussed in \verb|step-49|.
-In each case, find ways to efficiently increase the cell density in the location of singularities.
-\bonuspart Using your existing code, replicate the study performed in \verb|step-5|. 
-Note that the governing equation has changed slightly. 
-Can you further improve the accuracy of the result in \verb|step-5| using Manifolds?
-Tip: Look to the discussion ``A better mesh'' in the ``Possibilities for extensions'' section of \verb|step-6|.
-\end{parts}
-
-\end{questions}
-
-
-% ===== EXERCISE 5: Local (adaptive) refinement and computing errors ====
+% ===== EXERCISE 4: Local (adaptive) refinement and computing errors ====
 
 
 \clearpage
-\makeheader{5}{Local (adaptive) refinement and computing errors}{20 March 2018}
+\makeheader{4}{Global and local error computation and estimation}{20 March 2018}
 \makeresources{%
 \url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_6.html} \\
 \url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_7.html} \\
@@ -390,7 +334,7 @@ Tip: Look to the discussion ``A better mesh'' in the ``Possibilities for extensi
 
 \begin{questions}
 
-\question Using \verb|step-5| (or your previously modified version of \verb|step-4|) as a base:
+\question Using \verb|step-5| (or your previously modified version of \verb|step-3|) as a base:
 \begin{parts}
 \part \begin{align*}
 -\Delta u(\mathbf{x}) &= f(\mathbf{x}) \quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
@@ -490,35 +434,99 @@ Further information can be found in the discussion ``Playing with the regularity
 \end{questions}
 
 
+% ===== EXERCISE 5: Local refinement, hanging nodes and the ConstraintMatrix ====
+
+
+\clearpage
+\makeheader{5}{Local refinement, hanging nodes and the \texttt{ConstraintMatrix}}{20 March 2018}
+\makeresources{%
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_4.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_5.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceGridGenerator.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceVectorTools.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceDoFTools.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__constraints.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_49.html}
+}
+
+\begin{questions}
+
+\question Using \verb|step-5| (or your previously modified version of \verb|step-3|) as a base:
+\begin{parts}
+\part Solve Laplace's equation
+\begin{align*}
+-\Delta u(\mathbf{x}) = 0 &\quad \textnormal{in} \quad \Omega, \quad \textnormal{with} \\
+u(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega_{1}, \quad \textnormal{and} \\
+u(\mathbf{x}) = 1  &\quad \textnormal{on} \quad \partial\Omega_{2}
+\end{align*}
+on an L-shaped domain with length and width of dimension 1. Here, $\Omega_{2}$ denotes one of the end-edges of the L, and $\partial\Omega_{1} = \partial\Omega \backslash \partial\Omega_{2}$.
+\part Starting from a coarse grid, perform successive global refinements to increase the accuracy of the solution and to locate the singularity.
+\part \label{Ex 4: Hanging node constraints} Now switch from using global refinement to using local refinement in the vicinity of the singularity.
+To accomplish this, you'll need to build the hanging node constraints. 
+\part Build the Dirichlet boundary directly into a global \verb|ConstraintMatrix|, along with the existing hanging node constraints.
+With this change, several parts of your code need to be modified:
+\begin{subparts}
+\subpart The constraints need to be built in the \verb|setup| function. \\
+Tip: You can use the \verb|VectorTools::interpolate| function here.
+\subpart The \verb|ConstraintMatrix| should be used to distribute local cell and vector contributions to their global counterparts.
+\subpart The constraints must be distributed to the solution.
+\end{subparts}
+\end{parts}
+
+\question Additional tasks
+\begin{parts}
+\bonuspart Following (\ref{Ex 4: Hanging node constraints}), what happens if you ``forget'' to distribute the (hanging node) constraints after solving the linear system?
+\bonuspart Instead of using the \verb|VectorTools::interpolate| function, construct the Dirichlet contributions to the \verb|ConstraintMatrix| manually. \\
+Tip: There are two ways to accomplish this: (1) Use the tools provided in the \verb|DoFTools| namespace, or (2) loop over cell faces and interrogate them for global DoFs that have support there.
+\bonuspart Experiment with some of the other grids in the \verb|GridGenerator| namespace, such as \\\verb|GridGenerator::hyper_cross| and \verb|GridGenerator::cheese|, or create your own by using some of the grid modification tools discussed in \verb|step-49|.
+In each case, find ways to efficiently increase the cell density in the location of singularities.
+\bonuspart Using your existing code, replicate the study performed in \verb|step-5|. 
+Note that the governing equation has changed slightly. 
+Can you further improve the accuracy of the result in \verb|step-5| using Manifolds? \\
+Tip: Look to the discussion ``A better mesh'' in the ``Possibilities for extensions'' section of \verb|step-6|.
+\end{parts}
+
+\end{questions}
+
+
 % ===== EXERCISE 6: Shared memory parallelisation ====
 
 
 \clearpage
 \makeheader{6}{Shared memory parallelisation}{20 March 2018}
 \makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html} \\
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_6.html} \\
+\url{https://dealii.org/8.5.1/doxygen/deal.II/group__threads.html} \\
+\url{https://dealii.org/8.5.1/doxygen/deal.II/classThreads_1_1TaskGroup.html} \\
 \url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceWorkStream.html} \\
 \url{https://www.dealii.org/8.5.1/doxygen/deal.II/classFEValuesBase.html}
 }
 
 \begin{questions}
 
-\question \FINISHME{TaskGroup
-\begin{itemize}
-\item Note: Output using DataOut in tasks leads to seg fault (?) - get them to investigate this
-\item What else could they parallelise? Maybe get them to investigate this themselves?
-\begin{itemize}
-\item Assembly - would need to create a PerTaskData like struct per task
-\end{itemize}
-\end{itemize}
-}
+%\question \FINISHME{TaskGroup
+%\begin{itemize}
+%\item Note: Output using DataOut in tasks leads to seg fault (?) - get them to investigate this
+%\item What else could they parallelise? Maybe get them to investigate this themselves?
+%\begin{itemize}
+%\item Assembly - would need to create a PerTaskData like struct per task
+%\end{itemize}
+%\end{itemize}
+%}
 
-\question Using the outcome of the previous exercise as a base:
+\question Using \verb|step-6| or the outcome of the previous exercise as a base:
 \begin{parts}
+\part Parallelise the following parts of your code using \verb|TaskGroup| class:
+\begin{subparts}
+\subpart The system setup function.
+Can you parallelise the two calls the fill the \verb|constraints|?
+\subpart The assembly loop.
+\subpart The (manual) calculation of the solution $\mathcal{L}^{2}$ norm.
+\end{subparts}
 \part Parallelise the following parts of your code using \verb|TBB| via the \verb|WorkStream| class:
 \begin{subparts}
-\subpart The (manual) calculation of the solution $\mathcal{L}^{2}$ norm.
 \subpart The assembly loop.
+\subpart The (manual) calculation of the solution $\mathcal{L}^{2}$ norm.
 \end{subparts}
 \part Investigate the possible speed-up by playing around with the number of threads set in the call to \verb|Utilities::MPI::MPI_InitFinalize|.
 \end{parts}
@@ -533,8 +541,9 @@ Further information can be found in the discussion ``Playing with the regularity
 \bonuspart Implement additional data post-processors, parallelise them, and visualise their output:
 \begin{subparts}
 \subpart The cell-wise material identifier.
-\subpart The cell-wise solution $\mathcal{L}^{2}$ norm. % Note: This requires get_function_values() to be used.
-\subpart The cell-wise solution error $\mathcal{L}^{2}$ norm.
+\subpart The cell-wise average solution $\frac{1}{V}\int_{\Omega^{K}} \phi \left(\mathbf{x}\right) \, dV$
+%\subpart The cell-wise solution $\mathcal{L}^{2}$ norm. % Note: This requires get_function_values() to be used.
+%\subpart The cell-wise solution error $\mathcal{L}^{2}$ norm.
 \end{subparts}
 Tip: All of these outputs can be stored in a regular \verb|Vector| of length equal to the number of cells in the triangulation.
 \end{parts}
@@ -727,6 +736,11 @@ u(\mathbf{x},0) = u_{0}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega, \quad 
 \end{align*}
 \part Build the boundary conditions into a \verb|ConstraintMatrix|, instead of using \\\verb|MatrixTools::apply_boundary_values|.
 \part Rewrite the linear system solution scheme in the \verb|run| function using the \verb|linear_operator| and  \verb|constrained_linear_operator| class construction functions. (Note: The latter helps prevent having to reconstruct the solution-independent matrices $\mathbf{M}$ and $\mathbf{A}$ at each timestep).
+\part Use \verb|Sundials| to do time integration. Use \verb|Sundials::ARKode| (full implicit, full explicit, semi-implicit).
+\begin{subparts}
+\subpart Minimum: Reinit vector, implicit or explicit functions
+\subpart Solve jacobian system
+\end{subparts}
 \part Implement adaptive mesh refinement using the \verb|KellyErrorEstimator|, refining and coarsening the mesh after every $n$-timesteps.
 You now need to consider the discussion in the last point of ``Possibilities for extensions''.
 Basically, during the refinement process you will need to interpolate the solution stored for the previous timestep onto the new mesh; this task can be accomplished using the \verb|SolutionTransfer| class. \\
