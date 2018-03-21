@@ -106,7 +106,6 @@ private:
   std::vector<types::global_dof_index> local_dofs_per_process;
   IndexSet                             locally_owned_dofs;
   IndexSet                             locally_relevant_dofs;
-
 };
 
 
@@ -159,25 +158,24 @@ void Step6<dim>::setup_system ()
   constraints.clear ();
   DoFTools::make_hanging_node_constraints (dof_handler,
                                            constraints);
-
-
   VectorTools::interpolate_boundary_values (dof_handler,
                                             0,
                                             ZeroFunction<dim>(),
                                             constraints);
-
   constraints.close ();
 
-  DynamicSparsityPattern dsp (locally_relevant_dofs);
-  DoFTools::make_sparsity_pattern (dof_handler, dsp,
-                                   constraints, false);
-  SparsityTools::distribute_sparsity_pattern (dsp,
-                                              dof_handler.n_locally_owned_dofs_per_processor(),
+  DynamicSparsityPattern sparsity_pattern (locally_relevant_dofs);
+  DoFTools::make_sparsity_pattern (dof_handler,
+                                   sparsity_pattern,
+                                   constraints,
+                                   /*keep_constrained_dofs =*/ false);
+  SparsityTools::distribute_sparsity_pattern (sparsity_pattern,
+                                              local_dofs_per_process,
                                               mpi_communicator,
                                               locally_relevant_dofs);
   system_matrix.reinit (locally_owned_dofs,
                         locally_owned_dofs,
-                        dsp,
+                        sparsity_pattern,
                         mpi_communicator);
   solution.reinit (locally_owned_dofs, mpi_communicator);
   system_rhs.reinit (locally_owned_dofs, mpi_communicator);
@@ -268,7 +266,9 @@ void Step6<dim>::refine_grid ()
   Vector<float> estimated_error_per_cell (triangulation.n_active_cells());
 
   TrilinosWrappers::MPI::Vector locally_relevant_solution;
-  locally_relevant_solution.reinit (locally_owned_dofs, locally_relevant_dofs ,mpi_communicator);
+  locally_relevant_solution.reinit (locally_owned_dofs,
+                                    locally_relevant_dofs,
+                                    mpi_communicator);
   locally_relevant_solution = solution;
 
   KellyErrorEstimator<dim>::estimate (dof_handler,
@@ -298,7 +298,9 @@ void Step6<dim>::output_results (const unsigned int cycle) const
   DataOut<dim> data_out;
 
   TrilinosWrappers::MPI::Vector locally_relevant_solution;
-  locally_relevant_solution.reinit (locally_owned_dofs, locally_relevant_dofs ,mpi_communicator);
+  locally_relevant_solution.reinit (locally_owned_dofs,
+                                    locally_relevant_dofs,
+                                    mpi_communicator);
   locally_relevant_solution = solution;
 
   data_out.attach_dof_handler (dof_handler);
