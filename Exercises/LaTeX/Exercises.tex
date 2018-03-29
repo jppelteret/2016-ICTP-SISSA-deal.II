@@ -18,6 +18,7 @@
 \usepackage{multirow}
 \usepackage{hyperref}
 \usepackage{cleveref}
+\usepackage{subcaption}
 
 \usepackage{listings}
 % https://tex.stackexchange.com/a/17268
@@ -498,8 +499,8 @@ Tip: Look to the discussion ``A better mesh'' in the ``Possibilities for extensi
 \url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_6.html} \\
 \url{https://dealii.org/8.5.1/doxygen/deal.II/group__threads.html} \\
 \url{https://dealii.org/8.5.1/doxygen/deal.II/classThreads_1_1TaskGroup.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceWorkStream.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/classFEValuesBase.html}
+\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceWorkStream.html}
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/classFEValuesBase.html}
 }
 
 \begin{questions}
@@ -528,7 +529,8 @@ Can you parallelise the two calls the fill the \verb|constraints|?
 \subpart The assembly loop.
 \subpart The (manual) calculation of the solution $\mathcal{L}^{2}$ norm.
 \end{subparts}
-\part Investigate the possible speed-up by playing around with the number of threads set in the call to \verb|Utilities::MPI::MPI_InitFinalize|.
+\part Investigate the possible speed-up by playing around with the number of threads set in the call to \verb|Utilities::MPI::MPI_InitFinalize|. \\
+Tip: This class needs to be created in the \verb|main| file before you create and execute your problem class.
 \end{parts}
 
 %- Assembly
@@ -538,14 +540,20 @@ Can you parallelise the two calls the fill the \verb|constraints|?
 \question Additional tasks
 \begin{parts}
 \bonuspart What influence do the \verb|queue_length| and \verb|chunk_size| have on the efficiency of the various parallel operations that you have implemented?
-\bonuspart Implement additional data post-processors, parallelise them, and visualise their output:
+\bonuspart Perform some timings and compare the results:
 \begin{subparts}
-\subpart The cell-wise material identifier.
-\subpart The cell-wise average solution $\frac{1}{V}\int_{\Omega^{K}} \phi \left(\mathbf{x}\right) \, dV$
-%\subpart The cell-wise solution $\mathcal{L}^{2}$ norm. % Note: This requires get_function_values() to be used.
-%\subpart The cell-wise solution error $\mathcal{L}^{2}$ norm.
+\subpart The serial version of this code.
+\subpart The TBB threaded version of the code, but enforcing the use of one thread via the call to \verb|Utilities::MPI::MPI_InitFinalize|.
+\subpart The TBB threaded version of the code using the maximum number of threads.
 \end{subparts}
-Tip: All of these outputs can be stored in a regular \verb|Vector| of length equal to the number of cells in the triangulation.
+%\bonuspart Implement additional data post-processors, parallelise them, and visualise their output:
+%\begin{subparts}
+%\subpart The cell-wise material identifier.
+%\subpart The cell-wise average solution $\frac{1}{V}\int_{\Omega^{K}} \phi \left(\mathbf{x}\right) \, dV$
+%%\subpart The cell-wise solution $\mathcal{L}^{2}$ norm. % Note: This requires get_function_values() to be used.
+%%\subpart The cell-wise solution error $\mathcal{L}^{2}$ norm.
+%\end{subparts}
+%Tip: All of these outputs can be stored in a regular \verb|Vector| of length equal to the number of cells in the triangulation.
 \end{parts}
 
 \end{questions}
@@ -594,35 +602,73 @@ Tip: All of these outputs can be stored in a regular \verb|Vector| of length equ
 
 \question Using the supplied modified version of \verb|step-6| as a base:
 \begin{parts}
-\part For the first version of this code, use \verb|parallel::shared::Triangulation| and solve the 2d homogeneous Poisson equation 
+\part For the first version of this code, use \verb|parallel::shared::Triangulation| and solve the 2d non-homogeneous Poisson equation 
 \begin{align*}
--\Delta u(\mathbf{x}) &= f(\mathbf{x}) \quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
-u(\mathbf{x}) &= 0  \quad \textnormal{on} \quad \partial\Omega, \quad \textnormal{and} \\
-f(\mathbf{x}) &= \begin{cases}
-1 &\quad \textnormal{if} \quad \vert xy \vert > 0.05 \\
--1 &\quad \textnormal{otherwise}.
+- \alpha(\mathbf{x}) \Delta u(\mathbf{x}) &= f(\mathbf{x}) \quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
+u(\mathbf{x}) &= 0  \quad \textnormal{on} \quad \partial\Omega,
+\end{align*}
+where
+\begin{align*}
+\alpha(\mathbf{x}) = \begin{cases}
+5 &\quad \textnormal{if} \quad \vert \mathbf{x} - \mathbf{c} \vert < 0.2 \\
+1 &\quad \textnormal{otherwise},
+\end{cases}
+\quad \textnormal{and} \quad
+f(\mathbf{x}) = \begin{cases}
+1 &\quad \textnormal{if} \quad \vert x_{1} x_{2} \vert > 0.05 \\
+-10 &\quad \textnormal{otherwise},
 \end{cases}
 \end{align*}
-These are the rough steps that you'll need to take to achieve this:
+and $\mathbf{c} = \left[0.6,0.6\right]^{T}$. 
+The result similar to the following:  \\
+\begin{figure}[!h]
+\centering
+\begin{subfigure}[t]{0.475\textwidth}
+\centering
+\includegraphics[height=0.225\textheight]{Figures/lab_07_08-partitioning.png}
+\caption{Mesh and partitioning}
+\end{subfigure}
+\quad
+\begin{subfigure}[t]{0.475\textwidth}
+\centering
+\includegraphics[height=0.225\textheight]{Figures/lab_07_08-solution.png}
+\caption{Warped solution}
+\end{subfigure}
+\caption{Result produced from 3 initial global refinements and 8 refinement cycles, as visualised in \texttt{Paraview}.}
+\end{figure}
+\clearpage
+These are the rough steps that you'll need to take to achieve this (look for the \verb|TODO|'s listed in the minimal code):
 \begin{subparts}
-\subpart Initialise the MPI environment correctly in the \verb|main| function
-\subpart \FINISHME{FINISH ME}
-\subpart Trilinos
-\subpart Direct solver
+\subpart Implement the functions defining the material coefficient $\alpha(\mathbf{x})$ and forcing function $f(\mathbf{x})$.
+Extra credit for using a \verb|dealii::Function| for this purpose.
+\subpart Initialise the MPI environment correctly in the \verb|main| function.
+\subpart In the \verb|Step6| class constructor, initialise the class member variables correctly.
+\subpart In the \verb|setup_system| function, initialise the sparsity pattern, system matrix, solution and RHS vectors correctly.
+\subpart In the \verb|assemble_system| function:
+\begin{subsubparts}
+\subsubpart Configure the range of cells over which the assembly is performed.
+\subsubpart Implement the forcing function.
+\subsubpart Ensure synchronisation of the elements of the linear system at the end of the assembly loop.
+\end{subsubparts}
+\subpart In the \verb|solve| function, correctly choose the template parameter for the conjugate gradient solver, and select an appropriate preconditioner.
+\subpart In the \verb|refine_grid| function, create the vector with entries required by the\\ \verb|KellyErrorEstimator|.
+\subpart In the \verb|output_results| function, correctly construct the solution vector to be passed to \verb|DataOut| for later processing and visualisation.
 \end{subparts}
-\part Repeat the above using a \verb|parallel::distributed::Triangulation|, while considering the following:
-\begin{subparts}
-\subpart PETSc
-\subpart Iterative solver: CG + AMG
-\end{subparts}
+\part Repeat the above using a \verb|parallel::distributed::Triangulation|.
 \end{parts}
-
 
 \question Additional tasks
 \begin{parts}
-\bonuspart Compare the distribution of cells across the processes for the two implementation. Is there a difference and, if so, why?
-\bonuspart For this problem, measure the performance difference between the two implementations. What, do you think, are the primary factors affecting any differences you notice?
-\bonuspart \FINISHME{Heterogeneous Poisson equation?}
+\bonuspart Compare the distribution of cells across the processes for the two implementations. 
+Is there a difference and, if so, why?
+\bonuspart For this problem, measure the performance difference between the two implementations. 
+What, do you think, are the primary factors affecting any differences you notice?
+\bonuspart Investigate some of the various options for solvers (direct and iterative) and preconditioners.
+For example, \verb|Trilinos| offers a direct solver, and its own implementation of iterative solvers, and numerous preconditioners.
+Consider the properties of the linear system when deciding which options/combinations to test.
+\bonuspart Similar to the previous task, investigate the use of \verb|PETSc| as the parallel linear algebra library.
+%\bonuspart Investigate the use of the functions in the \verb|DerivativeApproximation| namespace as the refinement markers.
+%Which is the most efficient option / combination for this problem when the 
 \end{parts}
 
 \end{questions}
@@ -652,268 +698,268 @@ These are the rough steps that you'll need to take to achieve this:
 %\end{questions}
 
 
-% ===== EXERCISE 9: ????? ====
-
-
-\clearpage
-\makeheader{9}{?????}{22 March 2018}
-\makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/classParameterHandler.html} \\
-\url{https://www.dealii.org/developer/doxygen/deal.II/classParameterAcceptor.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__LAOperators.html}
-}
-
-\begin{questions}
-
-\question \FINISHME{Possible exercise outline?}
-\FINISHME{
-\begin{itemize}
-\item Use Git to manage this project
-  \begin{itemize}
-  \item \url{https://github.com/dealii/dealii/wiki/Contributing}
-  \item Start at a previous step
-  \item Commit this to master
-  \item Create a new branch and work off of enhancements there
-  \end{itemize}
-\item Extend example to use ParameterHandler
-  \begin{itemize}
-  \item Constant coefficient for two material zones (heterogenous Poisson)
-  \item Function parser for RHS function / boundary conditions
-  \item Solver (iterative + direct)
-  \item Preconditioner
-  \item Tolerances
-  \end{itemize}
-\item Use linear operator:
-  \begin{itemize}
-  \item Solve initial problem using normal linear operators
-  \item Next, solve problem using constrained linear operator
-  \end{itemize}
-\item Add some doxygen documentation?
-\end{itemize}
-}
-
-\question Using \verb|step-x| as a base:
-\begin{parts}
-\part x
-\end{parts}
-
-\question Additional tasks
-\begin{parts}
-\bonuspart x
-\end{parts}
-
-\end{questions}
-
-
-% ===== EXERCISE 10: Time dependent problems and SolutionTransfer ====
-
-
-\clearpage
-\makeheader{10}{Time dependent problems and \texttt{SolutionTransfer}}{22 March 2018}
-\makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_23.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_24.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__LAOperators.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__constraints.html} \\
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceTimeStepping.html}
-%\url{https://en.wikipedia.org/wiki/Potential_flow\#Sound_waves}
-%\url{https://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition}
-%https://www.dealii.org/developer/doxygen/deal.II/step_52.html
-}
-
-\begin{questions}
-
-\question Using \verb|step-23| as a base (or through appropriate modification of \verb|step-6|) we will be working through the ``Possibilities for extensions'' listed for \verb|step-23|.
-\begin{parts}
-\part The governing equations for the wave equation are
-\begin{align*}
-\frac{\partial^{2} u(\mathbf{x})}{\partial t^{2}} - u(\mathbf{x}) = f(\mathbf{x})  &\quad \textnormal{in} \quad \Omega \in [0,1]^{2} \times [0, T], \quad \textnormal{with} \\
-u(\mathbf{x},t) = \bar{u}(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega
-\intertext{with initial conditions}
-u(\mathbf{x},0) = u_{0}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega, \quad \textnormal{and} \\
-\frac{\partial u(\mathbf{x},0)}{\partial t} = u_{1}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega.
-\end{align*}
-\part Build the boundary conditions into a \verb|ConstraintMatrix|, instead of using \\\verb|MatrixTools::apply_boundary_values|.
-\part Rewrite the linear system solution scheme in the \verb|run| function using the \verb|linear_operator| and  \verb|constrained_linear_operator| class construction functions. (Note: The latter helps prevent having to reconstruct the solution-independent matrices $\mathbf{M}$ and $\mathbf{A}$ at each timestep).
-\part Use \verb|Sundials| to do time integration. Use \verb|Sundials::ARKode| (full implicit, full explicit, semi-implicit).
-\begin{subparts}
-\subpart Minimum: Reinit vector, implicit or explicit functions
-\subpart Solve jacobian system
-\end{subparts}
-\part Implement adaptive mesh refinement using the \verb|KellyErrorEstimator|, refining and coarsening the mesh after every $n$-timesteps.
-You now need to consider the discussion in the last point of ``Possibilities for extensions''.
-Basically, during the refinement process you will need to interpolate the solution stored for the previous timestep onto the new mesh; this task can be accomplished using the \verb|SolutionTransfer| class. \\
-Tip: Take special care when dealing with hanging nodes!
-\part Consider the governing equation with non-homogeneous coefficients
-\begin{gather}
-\rho(\mathbf{x}) \frac{\partial^{2} u(\mathbf{x})}{\partial t^{2}} - \alpha(\mathbf{x}) u(\mathbf{x}) = f(\mathbf{x})
-\end{gather}
-where $t$ denotes the time, $\rho$ the material density and $\alpha$ its stiffness modulus.
-How would you implement a time stepping scheme that better ensures that the CFL condition, namely that
-\begin{gather*}
-\Delta t \leq \frac{h}{c} \quad \textnormal{with} \quad c = \sqrt{\frac{\alpha}{\rho}} \quad ?
-\end{gather*}
-You may look to \verb|step-24|, in particular the discussion in the \verb|setup_system| section, for some tips.
-\end{parts} 
-
-\question Additional tasks
-\begin{parts}
-\bonuspart Investigate the role of the time stepping parameter $\theta$, used as part of the fractional step method.
-\bonuspart Rewrite the timestepping scheme making use of the \verb|TimeStepping| class. An example of the use of \verb|RungeKutta| methods is given in \href{https://www.dealii.org/developer/doxygen/deal.II/step_52.html}{\texttt{step-52}}.
-\end{parts}
-
-\end{questions}
-
-
-% ===== EXERCISE 11: Automatic differentiation using Sacado ====
-
-
-\clearpage
-\makeheader{11}{Automatic differentiation using Sacado}{22 March 2018}
-\makeresources{%
-\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_6.html}\\
-deal.II test-suite: \\
-\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01.cc}\\
-\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01a.cc}\\
-\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01b.cc}\\
-\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02.cc}\\
-\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02a.cc}\\
-\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02b.cc}
-}
-
-\begin{questions}
-
-\question \label{Ex 11: AD scalar functions} Compute the stipulated derivatives of the following functions using the \verb|Sacado::Fad::DFad| auto-differentiable number type. Verify your results.
-\begin{parts}
-\part \FINISHME{First derivatives only}
-\begin{subparts}
-\subpart $f(x) = \exp(2x)\ln(-2x)$ evaluated at $x = \frac{7\pi}{17}$.
-\begin{solution}
-% WolframAlpha: derivative of exp(2x)*ln(-2x)
-$\frac{\exp{(2 x)} (2 \ln(-2 x) + 1)}{x}$
-\end{solution}
-\subpart $f(x,y) = \sin(x^2-xy)$ evaluated at $x = $, $y = $
-\begin{solution}
-% WolframAlpha: derivative of sin(x*x - x*y) wrt x
-$(2 x - y) \cos(x (x - y))$
-% WolframAlpha: derivative of sin(x*x - x*y) wrt y
-$-x \cos(x (x - y))$
-\end{solution}
-\end{subparts}
-\part \FINISHME{First and second derivatives}
-\begin{subparts}
-\subpart $f(x) = $ evaluated at $x = $.
-\subpart $f(x,y) = $ evaluated at $x = $, $y = $.
-\end{subparts}
-\end{parts}
-
-
-\question \label{Ex 11: AD FEM} Using \verb|step-x| as a base:
-\begin{parts}
-\part Using the nested \verb|Sacado::Fad::DFad| auto-differentiable number type, solve Laplace's equation
-\begin{align*}
--\Delta u(\mathbf{x}) = 0 &\quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
-u(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega_{1}, \quad \textnormal{and} \\
-u(\mathbf{x}) = 1  &\quad \textnormal{on} \quad \partial\Omega_{2}
-\end{align*}
-on an L-shaped domain with length and width of dimension 1. Here, $\Omega_{2}$ denotes one of the end-edges of the L, and $\partial\Omega_{1} = \partial\Omega \backslash \partial\Omega_{2}$.   \\
-Tip: For this linear problem, you'll need to consider the energy functional
-\begin{gather*}
-\Pi = \frac{1}{2}\int_{\Omega} \nabla u \cdot \nabla u \; \textnormal{dV} 
-\quad \rightarrow \quad \textnormal{min}.
-\end{gather*}
-\part Extend the above to include the forcing function  
-% WolframAlpha: plot 0.5*cos(5*pi*x*y)+0.5 for x=0..1, y=0..1
-\begin{gather*}
-f(\mathbf{x}) = \begin{cases}
-1 &\quad \textnormal{if} \quad \frac{1}{2}\cos(5\pi x_{1} x_{2})+0.5 > 0.5 \\
-0 &\quad \textnormal{otherwise}.
-\end{cases}
-\end{gather*}
-Tip 1: For this linear problem, you'll need to consider the energy functional
-\begin{gather*}
-\Pi = \frac{1}{2}\int_{\Omega} \nabla u \cdot \nabla u \; \textnormal{dV}
-    + \int_{\Omega} u \cdot f \; \textnormal{dV}
-\quad \rightarrow \quad \textnormal{min}.
-\end{gather*}
-%\FINISHME{Can this be done like this, or does one need to add the traction separately?\\}
-Tip 2: You will also need to recall the finite element discretisation for the solution
-\begin{gather*}
-u (\mathbf{x}) = \sum_{I} N^{I} (\mathbf{x}) \; u^{I}
-\end{gather*}
-where $N^{I}$ is the shape function associated with the $I^{th}$ degree-of-freedom, and $u^{I}$ are solution coefficients.
-\end{parts}
-
-\question Additional tasks
-\begin{parts}
-\bonuspart Following up on \ref{Ex 11: AD scalar functions}, try to write a simple nonlinear solution scheme using \verb|Sacado::Fad::DFad| to solve for the roots of $f(x) = 5x^3 + 3x + 1$.
-\bonuspart Following up on \ref{Ex 11: AD FEM}, can you achieve the same goal using a nested\\ \verb|Sacado::Rad::ADvar<Sacado::Fad::DFad>|? How does the performance of this implementation compare to that of the \verb|Sacado::Fad::DFad<Sacado::Fad::DFad>|?
-\end{parts}
-
-\end{questions}
-
-
-% ===== Project ====
-
-
-\clearpage
-\makeprojectheader{Implementing the Cahn-Hiliard equations}{23 March 2018}
-%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
-%\leavevmode
-\makeresources{%
-\vspace*{-3\parsep}
-\begin{enumerate}
-\item \fullcite{Miehe2014d}
-\item \fullcite{Miehe2014e}
-\item \fullcite{Kaessmair2016a}
-\item \fullcite{Wodo2011a}
-\end{enumerate}%
-\vspace*{-\parsep}
-}
-\begin{questions}
-
-\question \FINISHME{Finish this}
-\FINISHME{
-\begin{itemize}
-\item Implement a solution to the Cahn-Hiliard equation
-\begin{itemize}
-\item Implementation based on Miehe paper
-\item Scalar (non-coupled) time dependent problem.
-\item Is it possible to implement other time stepping schemes? Miehe explicity uses backward Euler
-\item We have a base solution for the elastic-coupled problem, courtesy of S. Kaessmair which we can use to validate the student's work (we should attribute him on the tutorial as well).
-\item Timestepping: 
-\item Starting concentration: !=0.5 (0.5 leads to a bubble)
-\end{itemize}
-\item Parallelisation using MPI
-\item Assembly using automatic differentiation (Sacado)
-\begin{itemize}
-\item Start with formulation based on energy functional (twice differentiated)
-\item Next do residual-based formulation (one differentiated)
-\item Lastly, do full manual linearisation
-\end{itemize}
-\item Local adaptivity
-\begin{itemize}
-\item Ensuring conservation properties is important, as the solution can get stuck in a local equilibrium (e.g. parallel bands of concentrated material)
-\item Refinement strategy around regions of high concentration gradient. Manual refinement strategy vs using e.g. Kelly error estimator. Need at least 4 cells in the band of changing concentration.
-\item Solution transfer; implications for time-stepping algorithm
-\end{itemize}
-\item Consolidate everything learned in the course
-\item Add this as a tutorial to the deal.II library
-\item Open a pull-request on Github
-\end{itemize}
-}
-
-\question Using \verb|step-x| as a base:
-\begin{parts}
-\part x
-\end{parts}
-
-\question Additional tasks
-\begin{parts}
-\bonuspart x
-\end{parts}
-
-\end{questions}
+%% ===== EXERCISE 9: ????? ====
+%
+%
+%\clearpage
+%\makeheader{9}{?????}{22 March 2018}
+%\makeresources{%
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html} \\
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/classParameterHandler.html} \\
+%\url{https://www.dealii.org/developer/doxygen/deal.II/classParameterAcceptor.html} \\
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__LAOperators.html}
+%}
+%
+%\begin{questions}
+%
+%\question \FINISHME{Possible exercise outline?}
+%\FINISHME{
+%\begin{itemize}
+%\item Use Git to manage this project
+%  \begin{itemize}
+%  \item \url{https://github.com/dealii/dealii/wiki/Contributing}
+%  \item Start at a previous step
+%  \item Commit this to master
+%  \item Create a new branch and work off of enhancements there
+%  \end{itemize}
+%\item Extend example to use ParameterHandler
+%  \begin{itemize}
+%  \item Constant coefficient for two material zones (heterogenous Poisson)
+%  \item Function parser for RHS function / boundary conditions
+%  \item Solver (iterative + direct)
+%  \item Preconditioner
+%  \item Tolerances
+%  \end{itemize}
+%\item Use linear operator:
+%  \begin{itemize}
+%  \item Solve initial problem using normal linear operators
+%  \item Next, solve problem using constrained linear operator
+%  \end{itemize}
+%\item Add some doxygen documentation?
+%\end{itemize}
+%}
+%
+%\question Using \verb|step-x| as a base:
+%\begin{parts}
+%\part x
+%\end{parts}
+%
+%\question Additional tasks
+%\begin{parts}
+%\bonuspart x
+%\end{parts}
+%
+%\end{questions}
+%
+%
+%% ===== EXERCISE 10: Time dependent problems and SolutionTransfer ====
+%
+%
+%\clearpage
+%\makeheader{10}{Time dependent problems and \texttt{SolutionTransfer}}{22 March 2018}
+%\makeresources{%
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_23.html} \\
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_24.html} \\
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__LAOperators.html} \\
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/group__constraints.html} \\
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/namespaceTimeStepping.html}
+%%\url{https://en.wikipedia.org/wiki/Potential_flow\#Sound_waves}
+%%\url{https://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition}
+%%https://www.dealii.org/developer/doxygen/deal.II/step_52.html
+%}
+%
+%\begin{questions}
+%
+%\question Using \verb|step-23| as a base (or through appropriate modification of \verb|step-6|) we will be working through the ``Possibilities for extensions'' listed for \verb|step-23|.
+%\begin{parts}
+%\part The governing equations for the wave equation are
+%\begin{align*}
+%\frac{\partial^{2} u(\mathbf{x})}{\partial t^{2}} - u(\mathbf{x}) = f(\mathbf{x})  &\quad \textnormal{in} \quad \Omega \in [0,1]^{2} \times [0, T], \quad \textnormal{with} \\
+%u(\mathbf{x},t) = \bar{u}(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega
+%\intertext{with initial conditions}
+%u(\mathbf{x},0) = u_{0}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega, \quad \textnormal{and} \\
+%\frac{\partial u(\mathbf{x},0)}{\partial t} = u_{1}(\mathbf{x})  &\quad \textnormal{in} \quad \Omega.
+%\end{align*}
+%\part Build the boundary conditions into a \verb|ConstraintMatrix|, instead of using \\\verb|MatrixTools::apply_boundary_values|.
+%\part Rewrite the linear system solution scheme in the \verb|run| function using the \verb|linear_operator| and  \verb|constrained_linear_operator| class construction functions. (Note: The latter helps prevent having to reconstruct the solution-independent matrices $\mathbf{M}$ and $\mathbf{A}$ at each timestep).
+%\part Use \verb|Sundials| to do time integration. Use \verb|Sundials::ARKode| (full implicit, full explicit, semi-implicit).
+%\begin{subparts}
+%\subpart Minimum: Reinit vector, implicit or explicit functions
+%\subpart Solve jacobian system
+%\end{subparts}
+%\part Implement adaptive mesh refinement using the \verb|KellyErrorEstimator|, refining and coarsening the mesh after every $n$-timesteps.
+%You now need to consider the discussion in the last point of ``Possibilities for extensions''.
+%Basically, during the refinement process you will need to interpolate the solution stored for the previous timestep onto the new mesh; this task can be accomplished using the \verb|SolutionTransfer| class. \\
+%Tip: Take special care when dealing with hanging nodes!
+%\part Consider the governing equation with non-homogeneous coefficients
+%\begin{gather}
+%\rho(\mathbf{x}) \frac{\partial^{2} u(\mathbf{x})}{\partial t^{2}} - \alpha(\mathbf{x}) u(\mathbf{x}) = f(\mathbf{x})
+%\end{gather}
+%where $t$ denotes the time, $\rho$ the material density and $\alpha$ its stiffness modulus.
+%How would you implement a time stepping scheme that better ensures that the CFL condition, namely that
+%\begin{gather*}
+%\Delta t \leq \frac{h}{c} \quad \textnormal{with} \quad c = \sqrt{\frac{\alpha}{\rho}} \quad ?
+%\end{gather*}
+%You may look to \verb|step-24|, in particular the discussion in the \verb|setup_system| section, for some tips.
+%\end{parts} 
+%
+%\question Additional tasks
+%\begin{parts}
+%\bonuspart Investigate the role of the time stepping parameter $\theta$, used as part of the fractional step method.
+%\bonuspart Rewrite the timestepping scheme making use of the \verb|TimeStepping| class. An example of the use of \verb|RungeKutta| methods is given in \href{https://www.dealii.org/developer/doxygen/deal.II/step_52.html}{\texttt{step-52}}.
+%\end{parts}
+%
+%\end{questions}
+%
+%
+%% ===== EXERCISE 11: Automatic differentiation using Sacado ====
+%
+%
+%\clearpage
+%\makeheader{11}{Automatic differentiation using Sacado}{22 March 2018}
+%\makeresources{%
+%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_6.html}\\
+%deal.II test-suite: \\
+%\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01.cc}\\
+%\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01a.cc}\\
+%\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_01b.cc}\\
+%\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02.cc}\\
+%\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02a.cc}\\
+%\url{https://github.com/dealii/dealii/blob/master/tests/sacado/basic_02b.cc}
+%}
+%
+%\begin{questions}
+%
+%\question \label{Ex 11: AD scalar functions} Compute the stipulated derivatives of the following functions using the \verb|Sacado::Fad::DFad| auto-differentiable number type. Verify your results.
+%\begin{parts}
+%\part \FINISHME{First derivatives only}
+%\begin{subparts}
+%\subpart $f(x) = \exp(2x)\ln(-2x)$ evaluated at $x = \frac{7\pi}{17}$.
+%\begin{solution}
+%% WolframAlpha: derivative of exp(2x)*ln(-2x)
+%$\frac{\exp{(2 x)} (2 \ln(-2 x) + 1)}{x}$
+%\end{solution}
+%\subpart $f(x,y) = \sin(x^2-xy)$ evaluated at $x = $, $y = $
+%\begin{solution}
+%% mAlpha: derivative of sin(x*x - x*y) wrt x
+%$(2 x - y) \cos(x (x - y))$
+%% WolframAlpha: derivative of sin(x*x - x*y) wrt y
+%$-x \cos(x (x - y))$
+%\end{solution}
+%\end{subparts}
+%\part \FINISHME{First and second derivatives}
+%\begin{subparts}
+%\subpart $f(x) = $ evaluated at $x = $.
+%\subpart $f(x,y) = $ evaluated at $x = $, $y = $.
+%\end{subparts}
+%\end{parts}
+%
+%
+%\question \label{Ex 11: AD FEM} Using \verb|step-x| as a base:
+%\begin{parts}
+%\part Using the nested \verb|Sacado::Fad::DFad| auto-differentiable number type, solve Laplace's equation
+%\begin{align*}
+%-\Delta u(\mathbf{x}) = 0 &\quad \textnormal{in} \quad \Omega \in [0,1]^{2}, \quad \textnormal{with} \\
+%u(\mathbf{x}) = 0  &\quad \textnormal{on} \quad \partial\Omega_{1}, \quad \textnormal{and} \\
+%u(\mathbf{x}) = 1  &\quad \textnormal{on} \quad \partial\Omega_{2}
+%\end{align*}
+%on an L-shaped domain with length and width of dimension 1. Here, $\Omega_{2}$ denotes one of the end-edges of the L, and $\partial\Omega_{1} = \partial\Omega \backslash \partial\Omega_{2}$.   \\
+%Tip: For this linear problem, you'll need to consider the energy functional
+%\begin{gather*}
+%\Pi = \frac{1}{2}\int_{\Omega} \nabla u \cdot \nabla u \; \textnormal{dV} 
+%\quad \rightarrow \quad \textnormal{min}.
+%\end{gather*}
+%\part Extend the above to include the forcing function  
+%% WolframAlpha: plot 0.5*cos(5*pi*x*y)+0.5 for x=0..1, y=0..1
+%\begin{gather*}
+%f(\mathbf{x}) = \begin{cases}
+%1 &\quad \textnormal{if} \quad \frac{1}{2}\cos(5\pi x_{1} x_{2})+0.5 > 0.5 \\
+%0 &\quad \textnormal{otherwise}.
+%\end{cases}
+%\end{gather*}
+%Tip 1: For this linear problem, you'll need to consider the energy functional
+%\begin{gather*}
+%\Pi = \frac{1}{2}\int_{\Omega} \nabla u \cdot \nabla u \; \textnormal{dV}
+%    + \int_{\Omega} u \cdot f \; \textnormal{dV}
+%\quad \rightarrow \quad \textnormal{min}.
+%\end{gather*}
+%%\FINISHME{Can this be done like this, or does one need to add the traction separately?\\}
+%Tip 2: You will also need to recall the finite element discretisation for the solution
+%\begin{gather*}
+%u (\mathbf{x}) = \sum_{I} N^{I} (\mathbf{x}) \; u^{I}
+%\end{gather*}
+%where $N^{I}$ is the shape function associated with the $I^{th}$ degree-of-freedom, and $u^{I}$ are solution coefficients.
+%\end{parts}
+%
+%\question Additional tasks
+%\begin{parts}
+%\bonuspart Following up on \ref{Ex 11: AD scalar functions}, try to write a simple nonlinear solution scheme using \verb|Sacado::Fad::DFad| to solve for the roots of $f(x) = 5x^3 + 3x + 1$.
+%\bonuspart Following up on \ref{Ex 11: AD FEM}, can you achieve the same goal using a nested\\ \verb|Sacado::Rad::ADvar<Sacado::Fad::DFad>|? How does the performance of this implementation compare to that of the \verb|Sacado::Fad::DFad<Sacado::Fad::DFad>|?
+%\end{parts}
+%
+%\end{questions}
+%
+%
+%% ===== Project ====
+%
+%
+%\clearpage
+%\makeprojectheader{Implementing the Cahn-Hiliard equations}{23 March 2018}
+%%\url{https://www.dealii.org/8.5.1/doxygen/deal.II/step_x.html}
+%%\leavevmode
+%\makeresources{%
+%\vspace*{-3\parsep}
+%\begin{enumerate}
+%\item \fullcite{Miehe2014d}
+%\item \fullcite{Miehe2014e}
+%\item \fullcite{Kaessmair2016a}
+%\item \fullcite{Wodo2011a}
+%\end{enumerate}%
+%\vspace*{-\parsep}
+%}
+%\begin{questions}
+%
+%\question \FINISHME{Finish this}
+%\FINISHME{
+%\begin{itemize}
+%\item Implement a solution to the Cahn-Hiliard equation
+%\begin{itemize}
+%\item Implementation based on Miehe paper
+%\item Scalar (non-coupled) time dependent problem.
+%\item Is it possible to implement other time stepping schemes? Miehe explicity uses backward Euler
+%\item We have a base solution for the elastic-coupled problem, courtesy of S. Kaessmair which we can use to validate the student's work (we should attribute him on the tutorial as well).
+%\item Timestepping: 
+%\item Starting concentration: !=0.5 (0.5 leads to a bubble)
+%\end{itemize}
+%\item Parallelisation using MPI
+%\item Assembly using automatic differentiation (Sacado)
+%\begin{itemize}
+%\item Start with formulation based on energy functional (twice differentiated)
+%\item Next do residual-based formulation (one differentiated)
+%\item Lastly, do full manual linearisation
+%\end{itemize}
+%\item Local adaptivity
+%\begin{itemize}
+%\item Ensuring conservation properties is important, as the solution can get stuck in a local equilibrium (e.g. parallel bands of concentrated material)
+%\item Refinement strategy around regions of high concentration gradient. Manual refinement strategy vs using e.g. Kelly error estimator. Need at least 4 cells in the band of changing concentration.
+%\item Solution transfer; implications for time-stepping algorithm
+%\end{itemize}
+%\item Consolidate everything learned in the course
+%\item Add this as a tutorial to the deal.II library
+%\item Open a pull-request on Github
+%\end{itemize}
+%}
+%
+%\question Using \verb|step-x| as a base:
+%\begin{parts}
+%\part x
+%\end{parts}
+%
+%\question Additional tasks
+%\begin{parts}
+%\bonuspart x
+%\end{parts}
+%
+%\end{questions}
 
 \end{document}
