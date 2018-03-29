@@ -1,0 +1,2 @@
+docker pull dealii/dealii:v8.5.1-gcc-mpi-fulldepscandi-debugrelease
+docker run -t -i dealii/dealii:v8.5.1-gcc-mpi-fulldepscandi-debugrelease
